@@ -775,6 +775,10 @@
     list-style-position:inside;
 }
 
+.wasabee-dialog-select-region .container {
+  display: grid;
+}
+
 .wasabee-link-seperator:before {
     content: " ➾ ";
 }
