@@ -2,12 +2,9 @@ import { WDialog } from "../leafletClasses";
 import WasabeePortal from "../portal";
 import { getSelectedOperation } from "../selectedOp";
 import wX from "../wX";
-import {
-  getAllPortalsOnScreen,
-  testPortal,
-  clearAllLinks,
-} from "../uiCommands";
+import { testPortal, clearAllLinks } from "../uiCommands";
 import { greatCircleArcIntersectByLatLngs } from "../crosslinks";
+import SelectRegionDialog from "./selectRegion";
 
 // now that the formerly external mm functions are in the class, some of the logic can be cleaned up
 // to not require passing values around when we can get them from this.XXX
@@ -79,6 +76,27 @@ const MultimaxDialog = WDialog.extend({
       } else {
         alert(wX("PLEASE_SELECT_PORTAL"));
       }
+    });
+
+    const spineSetLabel = L.DomUtil.create("label", null, container);
+    spineSetLabel.textContent = "Spine region";
+    const spineSetButton = L.DomUtil.create("button", null, container);
+    spineSetButton.textContent = wX("SET");
+    this._spineSetDisplay = L.DomUtil.create("span", null, container);
+    this._spineSetDisplay.textContent = wX("NOT_SET");
+    L.DomEvent.on(spineSetButton, "click", () => {
+      const selectRegionDialog = new SelectRegionDialog({
+        title: "Select region for Multimax",
+        portalCallback: (portalSet) => {
+          this._portalSet = portalSet;
+          if (portalSet.length)
+            this._spineSetDisplay.textContent = wX("PORTAL_COUNT", {
+              count: portalSet.length,
+            });
+          else this._spineSetDisplay.textContent = wX("NOT_SET");
+        },
+      });
+      selectRegionDialog.enable();
     });
 
     const fllabel = L.DomUtil.create("label", null, container);
@@ -187,7 +205,7 @@ const MultimaxDialog = WDialog.extend({
   doMultimax: function () {
     // this._operation is OK here
     this._operation = getSelectedOperation();
-    const portals = getAllPortalsOnScreen(this._operation);
+    const portals = this._portalSet;
 
     // Calculate the multimax
     if (!this._anchorOne || !this._anchorTwo || !portals) {
