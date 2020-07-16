@@ -9,6 +9,7 @@ import {
 } from "../uiCommands";
 import { greatCircleArcIntersect } from "../crosslinks";
 import { postToFirebase } from "../firebaseSupport";
+import SelectRegionDialog from "./selectRegion";
 
 // now that the formerly external mm functions are in the class, some of the logic can be cleaned up
 // to not require passing values around when we can get them from this.XXX
@@ -89,6 +90,23 @@ const MultimaxDialog = WDialog.extend({
       } else {
         alert(wX("PLEASE_SELECT_PORTAL"));
       }
+    });
+
+    const portalSetLabel = L.DomUtil.create("label", null, container);
+    portalSetLabel.textContent = wX("PORTAL_SET_LABEL");
+    const portalSetButton = L.DomUtil.create("button", "server", container);
+    portalSetButton.textContent = wX("PORTAL_SET_BUTTON");
+    L.DomEvent.on(portalSetButton, "click", ev => {
+      L.DomEvent.stop(ev);
+      const selectRegionDialog = new SelectRegionDialog();
+      selectRegionDialog.setup(
+        wX("MM_SELECT_TITLE"),
+        wX("MM_SELECT_PROMPT"),
+        () => {
+          this._portalSet = selectRegionDialog.portalSet;
+        }
+      );
+      selectRegionDialog.enable();
     });
 
     const fllabel = L.DomUtil.create("label", null, container);
