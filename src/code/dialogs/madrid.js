@@ -1,11 +1,8 @@
 import { WDialog } from "../leafletClasses";
 import WasabeePortal from "../portal";
 import { getSelectedOperation } from "../selectedOp";
-import {
-  getAllPortalsOnScreen,
-  testPortal,
-  clearAllLinks,
-} from "../uiCommands";
+import { testPortal, clearAllLinks } from "../uiCommands";
+import SelectRegionDialog from "./selectRegion";
 import wX from "../wX";
 import MultimaxDialog from "./multimaxDialog";
 
@@ -61,11 +58,18 @@ const MadridDialog = MultimaxDialog.extend({
       this._setOneDisplay.textContent = wX("NOT_SET");
     }
     L.DomEvent.on(setOneButton, "click", () => {
-      this._portalSetOne = getAllPortalsOnScreen(getSelectedOperation());
-      // XXX this is not enough, need to cache them in case IITC purges them
-      this._setOneDisplay.textContent = wX("PORTAL_COUNT", {
-        count: this._portalSetOne.length,
+      const selectRegionDialog = new SelectRegionDialog({
+        title: "Select region for Madrid",
+        portalCallback: (portalSet) => {
+          this._portalSetOne = portalSet;
+          if (portalSet.length)
+            this._setOneDisplay.textContent = wX("PORTAL_COUNT", {
+              count: portalSet.length,
+            });
+          else this._setOneDisplay.textContent = wX("NOT_SET");
+        },
       });
+      selectRegionDialog.enable();
     });
 
     const anchorTwoLabel = L.DomUtil.create("label", null, container);
@@ -107,11 +111,18 @@ const MadridDialog = MultimaxDialog.extend({
       this._setTwoDisplay.textContent = wX("NOT_SET");
     }
     L.DomEvent.on(setTwoButton, "click", () => {
-      this._portalSetTwo = getAllPortalsOnScreen(getSelectedOperation());
-      // XXX cache
-      this._setTwoDisplay.textContent = wX("PORTAL_COUNT", {
-        count: this._portalSetTwo.length,
+      const selectRegionDialog = new SelectRegionDialog({
+        title: "Select region for Madrid",
+        portalCallback: (portalSet) => {
+          this._portalSetTwo = portalSet;
+          if (portalSet.length)
+            this._setTwoDisplay.textContent = wX("PORTAL_COUNT", {
+              count: portalSet.length,
+            });
+          else this._setTwoDisplay.textContent = wX("NOT_SET");
+        },
       });
+      selectRegionDialog.enable();
     });
 
     const anchorThreeLabel = L.DomUtil.create("label", null, container);
@@ -132,11 +143,18 @@ const MadridDialog = MultimaxDialog.extend({
       this._setThreeDisplay.textContent = wX("NOT_SET");
     }
     L.DomEvent.on(setThreeButton, "click", () => {
-      this._portalSetThree = getAllPortalsOnScreen(getSelectedOperation());
-      // XXX cache
-      this._setThreeDisplay.textContent = wX("PORTAL_COUNT", {
-        count: this._portalSetThree.length,
+      const selectRegionDialog = new SelectRegionDialog({
+        title: "Select region for Madrid",
+        portalCallback: (portalSet) => {
+          this._portalSetThree = portalSet;
+          if (portalSet.length)
+            this._setThreeDisplay.textContent = wX("PORTAL_COUNT", {
+              count: portalSet.length,
+            });
+          else this._setThreeDisplay.textContent = wX("NOT_SET");
+        },
       });
+      selectRegionDialog.enable();
     });
 
     //Add backlinks after all the rest is set up
