@@ -54,9 +54,9 @@ const SelectRegionDialog = WDialog.extend({
     const container = L.DomUtil.create("div", "container");
 
     const addAll = L.DomUtil.create("button", null, container);
-    addAll.textContent = "Add to selection all portals in view";
+    addAll.textContent = wX("SELECT_REGION_ADD_BUTTON");
     const clearSelection = L.DomUtil.create("button", null, container);
-    clearSelection.textContent = "Clear selection";
+    clearSelection.textContent = wX("SELECT_REGION_CLEAR_BUTTON");
 
     const statusDisplay = L.DomUtil.create("div", null, container);
     statusDisplay.textContent = wX("NOT_SET");

@@ -291,6 +291,8 @@
   "SELECT_INSTRUCTIONS": "Select two anchor portals, then zoom over the spine area.",
   "SELECT_MADRID_INSTRUCTIONS": "Select three anchor portals, zoom in on the area near the selected anchor, wait until the portals are loaded (portals must be on screen to be considered)  then select the 'define spine region' button for the corresponding base links.",
   "SELECT PORTAL": "Please select a portal first",
+  "SELECT_REGION_ADD_BUTTON": "Add to selection all portals in view",
+  "SELECT_REGION_CLEAR_BUTTON": "Clear selection",
   "SEL_PORT_FIRST": "Please select anchor portals first!",
   "SELF SWAP": "Cannot swap a portal with itself! Select a different portal.",
   "SEND ANALYTICS": "Send Anonymous Analytics",
