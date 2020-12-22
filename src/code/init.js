@@ -18,6 +18,7 @@ import OperationChecklist from "./dialogs/checklist";
 import WasabeeMe from "./me";
 import WasabeeOp from "./operation";
 import { openDB } from "idb";
+
 const Wasabee = window.plugin.wasabee;
 
 window.plugin.wasabee.init = async () => {
@@ -39,6 +40,9 @@ window.plugin.wasabee.init = async () => {
   Wasabee._selectedOp = null; // the in-memory working op;
   Wasabee._updateList = new Map();
   Wasabee.portalDetailQueue = new Array();
+
+  // pre-load leaflet-draw if needed
+  initLeafletDraw();
 
   initSkin();
   // can this be moved to the auth dialog?
@@ -271,4 +275,12 @@ async function initIdb() {
       console.debug(newVersion, tx);
     },
   });
+}
+
+function initLeafletDraw() {
+  if (!window.plugin.drawTools) {
+    require("leaflet-draw");
+    const drawStyle = require("../../node_modules/leaflet-draw/dist/leaflet.draw.css");
+    Wasabee.static.CSS["leaflet-draw"] = drawStyle;
+  }
 }

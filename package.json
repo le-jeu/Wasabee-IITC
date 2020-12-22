@@ -48,6 +48,7 @@
     "color-string": "^1.5.5",
     "geodesy": "^2.2.1",
     "idb": "^6.0.0",
+    "leaflet-draw": "^1.0.4",
     "sortablejs": "^1.12.0"
   }
 }

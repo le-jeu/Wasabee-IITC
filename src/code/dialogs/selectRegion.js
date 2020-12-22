@@ -18,7 +18,7 @@ const SelectRegionDialog = WDialog.extend({
   addHooks: function () {
     WDialog.prototype.addHooks.call(this);
 
-    this._layerGroup = new L.LayerGroup();
+    this._layerGroup = new L.FeatureGroup();
     window.addLayerGroup("Wasabee Selection Region", this._layerGroup, true);
     this.portalSet = new Map();
 
@@ -26,17 +26,25 @@ const SelectRegionDialog = WDialog.extend({
     this._drawlayers = new Map();
     this._drawlayers.set("default", this._defaultSet);
 
-    window.map.on("draw:created", this.addLayer, this);
-    window.map.on("draw:edited", this.refreshLayer, this);
-    window.map.on("draw:deleted", this.refreshLayer, this);
+    window.map.on("draw:created", this._addLayer, this);
+    window.map.on("draw:edited", this._refreshLayer, this);
+    window.map.on("draw:deleted", this._refreshLayer, this);
+
+    this._setupControl();
 
     this._displayDialog();
   },
 
   removeHooks: function () {
-    window.map.off("draw:created", this.addLayer, this);
-    window.map.off("draw:edited", this.refreshLayer, this);
-    window.map.off("draw:deleted", this.refreshLayer, this);
+    window.map.removeControl(this._drawControl);
+
+    if (window.plugin.drawTools) {
+      window.plugin.drawTools.addDrawControl();
+    }
+
+    window.map.off("draw:created", this._addLayer, this);
+    window.map.off("draw:edited", this._refreshLayer, this);
+    window.map.off("draw:deleted", this._refreshLayer, this);
 
     this._clearLayers();
 
@@ -44,14 +52,57 @@ const SelectRegionDialog = WDialog.extend({
     WDialog.prototype.removeHooks.call(this);
   },
 
-  addLayer: function (e) {
+  _setupControl: function () {
+    const polygonOptions = {
+      stroke: true,
+      color: "#ff7744",
+      weight: 4,
+      opacity: 1,
+      fill: true,
+      fillColor: "#ff7744", // to use the same as 'color' for fill
+      fillOpacity: 0.2,
+      dashArray: "",
+    };
+    const editOptions = L.extend({}, polygonOptions, {
+      dashArray: "10,10",
+    });
+
+    const toolbarOptions = {
+      draw: {
+        rectangle: false,
+        circlemarker: false,
+        polygon: {
+          shapeOptions: polygonOptions,
+        },
+        polyline: false,
+        circle: false,
+        marker: false,
+      },
+
+      edit: {
+        featureGroup: this._layerGroup,
+        edit: {
+          selectedPathOptions: editOptions,
+        },
+      },
+    };
+    if (window.plugin.drawTools)
+      window.map.removeControl(window.plugin.drawTools.drawControl);
+    this._drawControl = new L.Control.Draw(toolbarOptions);
+    window.map.addControl(this._drawControl);
+  },
+
+  _addLayer: function (e) {
     const layer = e.layer;
     if (e.layerType == "polygon") {
+      this._layerGroup.addLayer(layer);
       const set = new Map();
       this._drawlayers.set(layer._leaflet_id, set);
-      layer.setStyle({ color: "#3388ff" }); //default
+      let latLngs = layer.getLatLngs();
+      // for multipolygon, I don't get how this is possible
+      if (latLngs.length == 1) latLngs = latLngs[0];
       for (const p of getAllPortalsOnScreen(getSelectedOperation())) {
-        if (this.polygonContains(layer.getLatLngs(), p)) {
+        if (this._polygonContains(latLngs, p)) {
           this.portalSet.set(p.id, p);
           set.set(p.id, p);
         }
@@ -60,13 +111,30 @@ const SelectRegionDialog = WDialog.extend({
     }
   },
 
-  refreshLayer: function (e) {
+  _refreshLayer: function (e) {
     const layers = e.layers;
     layers.eachLayer((layer) => {
       if (this._drawlayers.has(layer._leaflet_id)) {
-        this._drawlayers.delete(layer._leaflet_id);
-        window.plugin.drawTools.drawnItems.removeLayer(layer);
-        window.plugin.drawTools.save();
+        if (e.type == "draw:edited") {
+          const set = this._drawlayers.get(layer._leaflet_id);
+          const oldSet = new Set(set);
+          set.clear();
+          let latLngs = layer.getLatLngs();
+          // for multipolygon, I don't get how this is possible
+          if (latLngs.length == 1) latLngs = latLngs[0];
+          for (const [id, p] of oldSet) {
+            if (this._polygonContains(latLngs, p)) {
+              set.set(id, p);
+            }
+          }
+          for (const p of getAllPortalsOnScreen(getSelectedOperation())) {
+            if (!set.has(p.id) && this._polygonContains(latLngs, p)) {
+              set.set(p.id, p);
+            }
+          }
+        } else {
+          this._drawlayers.delete(layer._leaflet_id);
+        }
       }
     });
     this.portalSet.clear();
@@ -88,7 +156,10 @@ const SelectRegionDialog = WDialog.extend({
     this._drawlayers.set("default", this._defaultSet);
   },
 
-  polygonContains(polygon, point) {
+  // adapted from fanfield2.filterPolygon
+  // does not care about curves, but this is supposed to be used
+  // with z15
+  _polygonContains(polygon, point) {
     let asum = 0;
     for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, ++i) {
       const ax = polygon[i].lng - +point.lng;
