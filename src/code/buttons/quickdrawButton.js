@@ -192,12 +192,6 @@ const QuickDrawControl = L.Handler.extend({
     if (e.originalEvent.key === "X") {
       postToFirebase({ id: "analytics", action: "quickdrawClearAll" });
       this._operation.clearAllLinks();
-      window.map.fire(
-        "wasabee:uiupdate:mapdata",
-        { reason: "qd keyup X" },
-        false
-      );
-      window.map.fire("wasabee:op:change");
       window.map.fire("wasabee:crosslinks");
     }
   },
@@ -283,8 +277,6 @@ const QuickDrawControl = L.Handler.extend({
     } else {
       this._portalClickedSingle(selectedPortal);
     }
-    window.map.fire("wasabee:op:change");
-    window.map.fire("wasabee:uiupdate:mapdata");
   },
 
   _portalClickedQD: function (selectedPortal) {
