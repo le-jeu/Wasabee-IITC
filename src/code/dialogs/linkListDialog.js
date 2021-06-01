@@ -20,6 +20,18 @@ const LinkListDialog = OperationChecklistDialog.extend({
     );
     const linkFields = [
       {
+        name: wX("LINKS"),
+        value: (link) => {
+          const fromPortal = operation.getPortal(link.fromPortalId);
+          const toPortal = operation.getPortal(link.toPortalId);
+          return fromPortal.name + "|" + toPortal.name;
+        },
+        sort: (a, b) => a.localeCompare(b),
+        format: (cell, value, link) => {
+          cell.appendChild(link.displayFormat(operation));
+        },
+      },
+      {
         name: "Length",
         value: (link) => link.length(operation),
         format: (cell, data) => {
@@ -36,10 +48,9 @@ const LinkListDialog = OperationChecklistDialog.extend({
         format: (cell, data, link) => {
           cell.appendChild(link.minLevel(operation));
         },
-        smallScreenHide: true,
       },
     ];
-    return fields.slice(0, 2).concat(linkFields, fields.slice(3));
+    return fields.slice(0, 1).concat(linkFields, fields.slice(3));
   },
 
   _displayDialog: function () {
