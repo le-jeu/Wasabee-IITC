@@ -169,21 +169,7 @@ export default class WasabeeLink {
           a.classList.add("help");
         } else {
           const d = Math.max(1, Math.ceil(8 * Math.pow(b / 160, 0.25)) / 8);
-          const msd = 8 * (d - Math.floor(d));
           s = "L" + d;
-          if (0 != msd) {
-            if (!(1 & msd)) {
-              s = s + "\u2007";
-            }
-            if (!(1 & msd || 2 & msd)) {
-              s = s + "\u2007";
-            }
-            s =
-              s +
-              (" = L" +
-                Math.floor(d) +
-                "0\u215b\u00bc\u215c\u00bd\u215d\u00be\u215e".charAt(msd));
-          }
         }
       }
     }
