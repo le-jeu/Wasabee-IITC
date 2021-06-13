@@ -38,7 +38,7 @@ const BlockerList = WDialog.extend({
     window.removeHook("portalDetailLoaded", listenForPortalDetails);
   },
 
-  _displayDialog: function () {
+  _displayDialog: async function () {
     const operation = getSelectedOperation();
     this.sortable = this._getListDialogContent(0, false); // defaults to sorting by op order
     loadFaked(operation);
@@ -71,6 +71,8 @@ const BlockerList = WDialog.extend({
         if (m.comment == "auto-marked") operation.removeMarker(m);
       }
     };
+
+    await this.sortable.done;
 
     this.createDialog({
       title: wX("KNOWN_BLOCK", { opName: operation.name }),

@@ -33,16 +33,19 @@ const KeysList = WDialog.extend({
     window.map.off("wasabee:op:select wasabee:op:change", this.update, this);
   },
 
-  _displayDialog: function () {
+  _displayDialog: async function () {
     const operation = getSelectedOperation();
     const buttons = {};
     buttons[wX("OK")] = () => {
       this.closeDialog();
     };
 
+    const sortable = this.getListDialogContent(operation, 0, false);
+    await sortable.done;
+
     this.createDialog({
       title: wX("KEY_LIST2", { opName: operation.name }),
-      html: this.getListDialogContent(operation, 0, false).table,
+      html: sortable.table,
       width: "auto",
       dialogClass: "keyslist",
       buttons: buttons,
