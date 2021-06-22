@@ -1,8 +1,10 @@
-import { WDialog } from "../leafletClasses";
+import WasabeeMe from "../model/me";
+import WasabeePortal from "../model/portal";
+
+import PortalUI from "../ui/portal";
 import Sortable from "../sortable";
+import { WDialog } from "../leafletClasses";
 import wX from "../wX";
-import WasabeeMe from "../me";
-import WasabeePortal from "../portal";
 import { getAgentWasabeeDkeys } from "../wd";
 
 const WasabeeDList = WDialog.extend({
@@ -66,7 +68,7 @@ const WasabeeDList = WDialog.extend({
             lat: n.Lat,
             lng: n.Lng,
           });
-          cell.appendChild(p.displayFormat(this._smallScreen));
+          cell.appendChild(PortalUI.displayFormat(p, this._smallScreen));
         },
       },
       {

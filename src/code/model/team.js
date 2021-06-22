@@ -1,6 +1,8 @@
 import WasabeeAgent from "./agent";
 import WasabeeMe from "./me";
-import { teamPromise } from "./server";
+
+import { teamPromise } from "../server";
+import db from "../db";
 
 export default class WasabeeTeam {
   constructor(data) {
@@ -41,7 +43,7 @@ export default class WasabeeTeam {
 
   async _updateCache() {
     try {
-      await window.plugin.wasabee.idb.put("teams", this);
+      await (await db).put("teams", this);
     } catch (e) {
       console.error(e);
     }
@@ -49,7 +51,7 @@ export default class WasabeeTeam {
 
   // 60 seconds seems too short for the default here...
   static async get(teamID, maxAgeSeconds = 60) {
-    const cached = await window.plugin.wasabee.idb.get("teams", teamID);
+    const cached = await (await db).get("teams", teamID);
     if (cached) {
       const t = new WasabeeTeam(cached);
       if (t.fetched > Date.now() - 1000 * maxAgeSeconds) {

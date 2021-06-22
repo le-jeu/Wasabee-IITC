@@ -1,5 +1,6 @@
-import WasabeeOp from "../operation";
-import { WDialog } from "../leafletClasses";
+import WasabeeOp from "../model/operation";
+import WasabeeMe from "../model/me";
+import WasabeeAgent from "../model/agent";
 import {
   getSelectedOperation,
   makeSelectedOperation,
@@ -10,12 +11,14 @@ import {
   hideOperation,
   setOpBackground,
 } from "../selectedOp";
+
+import AgentUI from "../ui/agent";
 import OpPermList from "./opPerms";
-import wX from "../wX";
-import WasabeeMe from "../me";
-import WasabeeAgent from "../agent";
 import { syncOp, deleteLocalOp, zoomToOperation } from "../uiCommands";
 import Sortable from "../sortable";
+import wX from "../wX";
+
+import { WDialog } from "../leafletClasses";
 
 const OpsDialog = WDialog.extend({
   statics: {
@@ -280,7 +283,7 @@ const OpsDialog = WDialog.extend({
       if (sum.currentserver) {
         const agent = await WasabeeAgent.get(tmpOp.creator);
         sum.owner = agent.name;
-        sum.ownerDisplay = await agent.formatDisplay();
+        sum.ownerDisplay = await AgentUI.formatDisplay(agent);
       } else {
         sum.owner = window.PLAYER.nickname;
       }

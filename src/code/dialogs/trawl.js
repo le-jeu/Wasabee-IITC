@@ -1,3 +1,5 @@
+import WasabeeMarker from "../model/marker";
+
 import { WDialog } from "../leafletClasses";
 import wX from "../wX";
 import { getSelectedOperation } from "../selectedOp";
@@ -315,8 +317,8 @@ const TrawlDialog = WDialog.extend({
     operation.startBatchMode();
     for (const m of operation.markers) {
       if (
-        m.type == window.plugin.wasabee.static.constants.MARKER_TYPE_DESTROY ||
-        m.type == window.plugin.wasabee.static.constants.MARKER_TYPE_VIRUS
+        m.type == WasabeeMarker.markerTypes.MARKER_TYPE_DESTROY ||
+        m.type == WasabeeMarker.markerTypes.MARKER_TYPE_VIRUS
       )
         operation.removeMarker(m);
     }

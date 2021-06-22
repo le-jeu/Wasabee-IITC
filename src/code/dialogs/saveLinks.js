@@ -1,7 +1,9 @@
-import { WDialog } from "../leafletClasses";
-import WasabeePortal from "../portal";
+import WasabeePortal from "../model/portal";
+
+import PortalUI from "../ui/portal";
 import { getSelectedOperation } from "../selectedOp";
 import { clearAllLinks, getAllPortalsLinked } from "../uiCommands";
+import { WDialog } from "../leafletClasses";
 import wX from "../wX";
 
 const SaveLinksDialog = WDialog.extend({
@@ -34,7 +36,7 @@ const SaveLinksDialog = WDialog.extend({
     //do magic
     if (this._anchor) {
       this._anchorDisplay.appendChild(
-        this._anchor.displayFormat(this._smallScreen)
+        PortalUI.displayFormat(this._anchor, this._smallScreen)
       );
     } else {
       this._anchorDisplay.textContent = wX("NOT_SET");
@@ -42,13 +44,13 @@ const SaveLinksDialog = WDialog.extend({
 
     L.DomEvent.on(anchorButton, "click", (ev) => {
       L.DomEvent.stop(ev);
-      this._anchor = WasabeePortal.getSelected();
+      this._anchor = PortalUI.getSelected();
       if (this._anchor) {
         localStorage[window.plugin.wasabee.static.constants.ANCHOR_ONE_KEY] =
           JSON.stringify(this._anchor);
         this._anchorDisplay.textContent = "";
         this._anchorDisplay.appendChild(
-          this._anchor.displayFormat(this._smallScreen)
+          PortalUI.displayFormat(this._anchor, this._smallScreen)
         );
       } else {
         alert(wX("PLEASE_SELECT_PORTAL"));

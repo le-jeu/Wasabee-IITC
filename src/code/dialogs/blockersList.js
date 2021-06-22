@@ -1,5 +1,3 @@
-import { WDialog } from "../leafletClasses";
-import Sortable from "../sortable";
 import { getSelectedOperation } from "../selectedOp";
 import {
   listenForAddedPortals,
@@ -7,8 +5,12 @@ import {
   loadFaked,
   blockerAutomark,
 } from "../uiCommands";
-import wX from "../wX";
+
+import PortalUI from "../ui/portal";
+import Sortable from "../sortable";
 import TrawlDialog from "./trawl";
+import { WDialog } from "../leafletClasses";
+import wX from "../wX";
 
 const BlockerList = WDialog.extend({
   statics: {
@@ -107,7 +109,7 @@ const BlockerList = WDialog.extend({
         sort: (a, b) => a.localeCompare(b),
         format: (row, value, blocker) => {
           const p = operation.getPortal(blocker.fromPortalId);
-          row.appendChild(p.displayFormat());
+          row.appendChild(PortalUI.displayFormat(p));
         },
       },
       {
@@ -130,7 +132,7 @@ const BlockerList = WDialog.extend({
         sort: (a, b) => a.localeCompare(b),
         format: (row, value, blocker) => {
           const p = operation.getPortal(blocker.toPortalId);
-          row.appendChild(p.displayFormat());
+          row.appendChild(PortalUI.displayFormat(p));
         },
       },
       {

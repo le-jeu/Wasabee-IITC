@@ -1,7 +1,9 @@
+import LinkUI from "../ui/link";
+import PortalUI from "../ui/portal";
 import OperationChecklistDialog from "./checklist.js";
-import wX from "../wX";
 import { loadFaked } from "../uiCommands";
 import { getSelectedOperation } from "../selectedOp";
+import wX from "../wX";
 
 const LinkListDialog = OperationChecklistDialog.extend({
   statics: {
@@ -34,7 +36,7 @@ const LinkListDialog = OperationChecklistDialog.extend({
         title: wX("MIN_SRC_PORT_LVL"),
         value: (link) => link.length(operation),
         format: (cell, data, link) => {
-          cell.appendChild(link.minLevel(operation));
+          cell.appendChild(LinkUI.minLevel(link, operation));
         },
         smallScreenHide: true,
       },
@@ -60,7 +62,7 @@ const LinkListDialog = OperationChecklistDialog.extend({
 
     this.createDialog({
       title: wX("LINKS2", {
-        portalName: this.options.portal.displayName,
+        portalName: PortalUI.displayName(this.options.portal),
         outgoing: fromCount,
         incoming: toCount,
       }),
@@ -89,7 +91,7 @@ const LinkListDialog = OperationChecklistDialog.extend({
     this.setContent(this.sortable.table);
     this.setTitle(
       wX("LINKS2", {
-        portalName: this.options.portal.displayName,
+        portalName: PortalUI.displayName(this.options.portal),
         outgoing: fromCount,
         incoming: toCount,
       })

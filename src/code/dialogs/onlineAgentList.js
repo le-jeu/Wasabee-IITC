@@ -1,7 +1,10 @@
-import { WDialog } from "../leafletClasses";
+import WasabeeAgent from "../model/agent";
+
+import AgentUI from "../ui/agent";
 import Sortable from "../sortable";
-import WasabeeAgent from "../agent";
 import wX from "../wX";
+
+import { WDialog } from "../leafletClasses";
 
 const OnlineAgentList = WDialog.extend({
   statics: {
@@ -47,7 +50,7 @@ const OnlineAgentList = WDialog.extend({
         value: (agent) => agent.name,
         sort: (a, b) => a.localeCompare(b),
         format: async (cell, value, agent) =>
-          cell.appendChild(await agent.formatDisplay(0)),
+          cell.appendChild(await AgentUI.formatDisplay(agent, 0)),
       },
       {
         name: "Last Seen",

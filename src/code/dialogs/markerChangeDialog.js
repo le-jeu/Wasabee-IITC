@@ -1,6 +1,8 @@
+import WasabeeMarker from "../model/marker";
+import PortalUI from "../ui/portal";
+import { getSelectedOperation } from "../selectedOp";
 import { WDialog } from "../leafletClasses";
 import wX from "../wX";
-import { getSelectedOperation } from "../selectedOp";
 
 const MarkerChangeDialog = WDialog.extend({
   statics: {
@@ -25,12 +27,14 @@ const MarkerChangeDialog = WDialog.extend({
     const portal = operation.getPortal(this.options.marker.portalId);
     const portalDisplay = L.DomUtil.create("div", "portal", content);
 
-    portalDisplay.appendChild(portal.displayFormat(this._smallScreen));
+    portalDisplay.appendChild(
+      PortalUI.displayFormat(portal, this._smallScreen)
+    );
 
     this._type = L.DomUtil.create("select", null, content);
 
     const markers = operation.getPortalMarkers(portal);
-    for (const k of window.plugin.wasabee.static.markerTypes) {
+    for (const k of Object.values(WasabeeMarker.markerTypes)) {
       const o = L.DomUtil.create("option", null, this._type);
       o.value = k;
       o.textContent = wX(k);
@@ -41,15 +45,18 @@ const MarkerChangeDialog = WDialog.extend({
     const buttons = {};
     buttons[wX("OK")] = () => {
       if (
-        window.plugin.wasabee.static.markerTypes.has(this._type.value) &&
+        Object.values(WasabeeMarker.markerTypes).includes(this._type.value) &&
         !markers.has(this._type.value)
       ) {
         operation.removeMarker(this.options.marker);
-        operation.addMarker(this._type.value, portal, {
-          zone: this.options.marker.zone,
-          comment: this.options.marker.comment,
-          assign: this.options.marker.assignedTo,
-        });
+        if (
+          !operation.addMarker(this._type.value, portal, {
+            zone: this.options.marker.zone,
+            comment: this.options.marker.comment,
+            assign: this.options.marker.assignedTo,
+          })
+        )
+          alert(wX("ALREADY_HAS_MARKER"));
       }
       this.closeDialog();
     };

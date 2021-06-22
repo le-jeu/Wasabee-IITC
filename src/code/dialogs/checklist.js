@@ -1,7 +1,10 @@
-import { WDialog } from "../leafletClasses";
-import WasabeeAgent from "../agent";
-import WasabeeLink from "../link";
-import WasabeeMarker from "../marker";
+import WasabeeAgent from "../model/agent";
+import WasabeeLink from "../model/link";
+import WasabeeMarker from "../model/marker";
+import { getSelectedOperation } from "../selectedOp";
+
+import LinkUI from "../ui/link";
+import PortalUI from "../ui/portal";
 import Sortable from "../sortable";
 import AssignDialog from "./assignDialog";
 import StateDialog from "./stateDialog";
@@ -14,7 +17,7 @@ import {
   setMarkersToZones,
   setLinksToZones,
 } from "../uiCommands";
-import { getSelectedOperation } from "../selectedOp";
+import { WDialog } from "../leafletClasses";
 import wX from "../wX";
 
 const OperationChecklistDialog = WDialog.extend({
@@ -127,11 +130,11 @@ const OperationChecklistDialog = WDialog.extend({
         sort: (a, b) => a.localeCompare(b),
         format: (cell, value, thing) => {
           if (thing instanceof WasabeeLink) {
-            cell.appendChild(thing.displayFormat(operation));
+            cell.appendChild(LinkUI.displayFormat(thing, operation));
             if (this._smallScreen) cell.colSpan = 2;
           } else {
             cell.appendChild(
-              operation.getPortal(thing.portalId).displayFormat()
+              PortalUI.displayFormat(operation.getPortal(thing.portalId))
             );
           }
         },
@@ -360,7 +363,7 @@ const OperationChecklistDialog = WDialog.extend({
         for (const [link, c] of emptyFieldLinks) {
           const li = L.DomUtil.create("li", "empty-field-link", content);
           li.textContent = c;
-          li.appendChild(link.displayFormat(operation));
+          li.appendChild(LinkUI.displayFormat(link, operation));
         }
         alert(container, true);
       } else {
