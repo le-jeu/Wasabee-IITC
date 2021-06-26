@@ -3,6 +3,7 @@ import WasabeePortal from "./portal";
 import WasabeeMarker from "./marker";
 import WasabeeMe from "./me";
 import WasabeeZone from "./zone";
+import Evented from "./evented";
 import { generateId, newColors } from "../auxiliar";
 import { GetWasabeeServer } from "../server";
 import { getSelectedOperation } from "../selectedOp";
@@ -10,8 +11,9 @@ import db from "../db";
 
 import { constants } from "../static";
 
-export default class WasabeeOp {
+export default class WasabeeOp extends Evented {
   constructor(obj) {
+    super();
     if (typeof obj == "string") {
       try {
         obj = JSON.parse(obj);
@@ -338,7 +340,7 @@ export default class WasabeeOp {
     this.cleanAnchorList();
     this.cleanPortalList();
     this.update(true);
-    this.runCrosslinks();
+    this.updateBlockers();
   }
 
   removeMarker(marker) {
@@ -347,7 +349,7 @@ export default class WasabeeOp {
     });
     this.cleanPortalList();
     this.update(true);
-    this.runCrosslinks();
+    this.updateBlockers();
   }
 
   setMarkerComment(marker, comment) {
@@ -442,7 +444,7 @@ export default class WasabeeOp {
     this.cleanAnchorList();
     this.cleanPortalList();
     this.update(true);
-    this.runCrosslinks();
+    this.updateBlockers();
   }
 
   reverseLink(startPortalID, endPortalID) {
@@ -664,10 +666,10 @@ export default class WasabeeOp {
     if (!existingLink) {
       this.links.push(link);
       this.update(true);
-      this.runCrosslinks();
+      this.updateBlockers();
     } else if (options.replace) {
       this.update(true);
-      this.runCrosslinks();
+      this.updateBlockers();
     } else {
       console.debug(
         "Link Already Exists In Operation -> " + JSON.stringify(link)
@@ -777,7 +779,7 @@ export default class WasabeeOp {
     this._addPortal(newPortal);
     this._swapPortal(originalPortal, newPortal);
     this.update(true);
-    this.runCrosslinks();
+    this.updateBlockers();
   }
 
   addMarker(markerType, portal, options) {
@@ -811,7 +813,7 @@ export default class WasabeeOp {
     this.update(true);
     // run crosslink to update the layer
     // XXX: we don't need to check, only redraw, so we need something clever, probably in mapDraw or crosslink.js
-    if (destructMarkerTypes.includes(markerType)) this.runCrosslinks();
+    if (destructMarkerTypes.includes(markerType)) this.updateBlockers();
     return true;
   }
 
@@ -868,16 +870,12 @@ export default class WasabeeOp {
     }
 
     this.store(); // no await, let it happen in the background unless we see races
-    window.map.fire("wasabee:op:change");
+    this.fire("update");
   }
 
-  runCrosslinks() {
+  updateBlockers() {
     if (this._batchmode === true) return;
-    window.map.fire(
-      "wasabee:crosslinks",
-      { reason: "op runCrosslinks" },
-      false
-    );
+    this.fire("blockers");
   }
 
   startBatchMode() {
@@ -887,7 +885,7 @@ export default class WasabeeOp {
   endBatchMode() {
     this._batchmode = false;
     this.update(true);
-    this.runCrosslinks();
+    this.updateBlockers();
   }
 
   convertLinksToObjs(links) {
