@@ -9,6 +9,7 @@ import { getSelectedOperation, opsList } from "./selectedOp";
 import LinkUI from "./ui/link";
 import AnchorUI from "./ui/anchor";
 import AgentUI from "./ui/agent";
+import MarkerUI from "./ui/marker";
 
 const Wasabee = window.plugin.wasabee;
 
@@ -86,7 +87,7 @@ function addMarker(target, operation) {
     async (ev) => {
       L.DomEvent.stop(ev);
       if (marker.isPopupOpen()) return;
-      const c = await target.popupContent(marker);
+      const c = await MarkerUI.popupContent(target, marker);
       marker.setPopupContent(c);
       marker._popup._wrapper.classList.add("wasabee-popup");
       marker.update();
