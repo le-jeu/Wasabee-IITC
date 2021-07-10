@@ -389,7 +389,7 @@ export async function blockerAutomark(operation, first = true) {
 
   // add marker
   let type = WasabeeMarker.constants.MARKER_TYPE_DESTROY;
-  if (wportal.team == "E") {
+  if (PortalUI.team(wportal) == "E") {
     type = WasabeeMarker.constants.MARKER_TYPE_VIRUS;
   }
   const zone = operation.determineZone(wportal.latLng);
