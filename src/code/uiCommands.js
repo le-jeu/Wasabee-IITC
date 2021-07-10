@@ -135,15 +135,15 @@ export function listenForAddedPortals(newPortal) {
 
 export function listenForPortalDetails(e) {
   if (!e.success) return;
+  const portal = new WasabeePortal({
+    id: e.guid,
+    name: e.details.title,
+    lat: (e.details.latE6 / 1e6).toFixed(6),
+    lng: (e.details.lngE6 / 1e6).toFixed(6),
+  });
   const op = getSelectedOperation();
-  op.updatePortal(
-    new WasabeePortal({
-      id: e.guid,
-      name: e.details.title,
-      lat: (e.details.latE6 / 1e6).toFixed(6),
-      lng: (e.details.lngE6 / 1e6).toFixed(6),
-    })
-  );
+  op.updatePortal(portal);
+  WasabeeBlocker.updatePortal(op, portal);
 }
 
 // This is what should be called to add to the queue

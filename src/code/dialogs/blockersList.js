@@ -10,7 +10,6 @@ import {
 import wX from "../wX";
 import TrawlDialog from "./trawl";
 import WasabeeBlocker from "../model/blocker";
-import WasabeePortal from "../model/portal";
 
 import PortalUI from "../ui/portal";
 
@@ -115,9 +114,7 @@ const BlockerList = WDialog.extend({
         },
         sort: (a, b) => a.localeCompare(b),
         format: (row, value, blocker) => {
-          row.appendChild(
-            PortalUI.displayFormat(new WasabeePortal(blocker.fromPortal))
-          );
+          row.appendChild(PortalUI.displayFormat(blocker.fromPortal));
         },
       },
       {
@@ -137,9 +134,7 @@ const BlockerList = WDialog.extend({
         },
         sort: (a, b) => a.localeCompare(b),
         format: (row, value, blocker) => {
-          row.appendChild(
-            PortalUI.displayFormat(new WasabeePortal(blocker.toPortal))
-          );
+          row.appendChild(PortalUI.displayFormat(blocker.toPortal));
         },
       },
       {

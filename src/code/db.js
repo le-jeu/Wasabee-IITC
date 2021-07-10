@@ -1,6 +1,6 @@
 import { openDB } from "idb";
 
-const version = 3;
+const version = 4;
 
 // XXX audit these to make sure all the various indexes are used
 const db = openDB("wasabee", version, {
@@ -28,12 +28,21 @@ const db = openDB("wasabee", version, {
       ops.createIndex("server", "server");
     }
     if (oldVersion < 3) {
+      // { opID, from, to }
       const blockers = db.createObjectStore("blockers", {
         keyPath: ["opID", "from", "to"],
       });
       blockers.createIndex("opID", "opID", { unique: false });
       blockers.createIndex("from", ["opID", "from"], { unique: false });
       blockers.createIndex("to", ["opID", "to"], { unique: false });
+    }
+    if (oldVersion < 4) {
+      // portals for blockers
+      // { id, lat, lng, name }
+      const portals = db.createObjectStore("blockers_portals", {
+        keyPath: ["opID", "id"],
+      });
+      portals.createIndex("opID", "opID", { unique: false });
     }
     /* if (oldVersion < 3) {
       const teams = tx.objectStore("teams");
