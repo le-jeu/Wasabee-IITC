@@ -1,0 +1,253 @@
+import { WDialog, WTooltip } from "../leafletClasses";
+import wX from "../wX";
+import { getSelectedOperation } from "../selectedOp";
+import { addToColorList } from "../skin";
+import ZoneSetColorDialog from "./zoneSetColor";
+import { convertColorToHex } from "../auxiliar";
+import { setMarkersToZones, setLinksToZones } from "../uiCommands";
+
+class ZoneDialog extends WDialog {
+  ZonedrawHandler: any;
+  addHooks () {
+    this.ZonedrawHandler = new ZonedrawHandler({ parent: this });
+    WDialog.prototype.addHooks.call(this);
+    window.map.on("wasabee:op:change wasabee:op:select", this.update, this);
+
+    if (this._smallScreen) {
+      this._displaySmallDialog();
+    } else {
+      this._displayDialog();
+    }
+  }
+
+  removeHooks () {
+    WDialog.prototype.removeHooks.call(this);
+    window.map.off("wasabee:op:change wasabee:op:select", this.update, this);
+    this.ZonedrawHandler.disable();
+  }
+
+  update () {
+    const h = this.buildList();
+    this.setContent(h);
+  }
+
+  _displayDialog () {
+    const html = this.buildList();
+
+    const buttons = {};
+    buttons[wX("OK")] = () => {
+      this.closeDialog();
+    };
+
+    buttons[wX("ADD_ZONE")] = () => {
+      if (getSelectedOperation().canWrite()) getSelectedOperation().addZone();
+    };
+
+    buttons[wX("SET_MARKERS_ZONES")] = () => {
+      if (getSelectedOperation().canWrite()) setMarkersToZones();
+    };
+
+    buttons[wX("SET_LINKS_ZONES")] = () => {
+      if (getSelectedOperation().canWrite()) setLinksToZones();
+    };
+
+    this.createDialog({
+      title: "Zones",
+      html: html,
+      width: "auto",
+      dialogClass: "zone",
+      buttons: buttons,
+      id: window.plugin.wasabee.static.dialogNames.zone,
+    });
+  }
+
+  _displaySmallDialog () {
+    this._displayDialog();
+  }
+
+  buildList () {
+    const op = getSelectedOperation();
+    const canWrite = op.getPermission() === "write";
+    const container = L.DomUtil.create("div", null, null);
+    const tbody = L.DomUtil.create(
+      "tbody",
+      "",
+      L.DomUtil.create("table", "wasabee-table", container)
+    );
+    const hr = L.DomUtil.create("tr", null, tbody);
+    L.DomUtil.create("th", null, hr).textContent = "ID";
+    L.DomUtil.create("th", null, hr).textContent = "Name";
+    L.DomUtil.create("th", null, hr).textContent = "Color";
+    if (canWrite) L.DomUtil.create("th", null, hr).textContent = "Commands";
+
+    for (const z of op.zones) {
+      const tr = L.DomUtil.create("tr", null, tbody);
+      const idcell = L.DomUtil.create("td", null, tr);
+      idcell.textContent = `${z.id}`;
+      const namecell = L.DomUtil.create("td", null, tr);
+      const nameinput = L.DomUtil.create("input", null, namecell);
+      nameinput.type = "text";
+      nameinput.value = z.name;
+
+      const colorcell = L.DomUtil.create("td", null, tr);
+      const picker = L.DomUtil.create("input", "picker", colorcell);
+      picker.type = "color";
+      picker.value = convertColorToHex(z.color);
+      picker.setAttribute("list", "wasabee-colors-datalist");
+      picker.disabled = !canWrite;
+
+      L.DomEvent.on(picker, "change", (ev) => {
+        L.DomEvent.stop(ev);
+        z.color = picker.value;
+        op.update();
+        addToColorList(picker.value);
+      });
+
+      L.DomEvent.on(nameinput, "change", (ev) => {
+        L.DomEvent.stop(ev);
+        getSelectedOperation().renameZone(z.id, nameinput.value);
+      });
+
+      if (canWrite) {
+        const commandcell = L.DomUtil.create("td", null, tr);
+
+        const color = L.DomUtil.create("a", null, commandcell);
+        color.textContent = "🖌";
+        color.href = "#";
+        L.DomEvent.on(color, "click", (ev) => {
+          L.DomEvent.stop(ev);
+          const zoneSetColorDialog = new ZoneSetColorDialog({
+            zone: z,
+          });
+          zoneSetColorDialog.enable();
+        });
+        if (z.id != 1) {
+          const del = L.DomUtil.create("a", null, commandcell);
+          del.textContent = "🗑";
+          del.href = "#";
+          L.DomEvent.on(del, "click", (ev) => {
+            L.DomEvent.stop(ev);
+            getSelectedOperation().removeZone(z.id);
+          });
+        }
+        if (z.points.length == 0) {
+          const addPoints = L.DomUtil.create("a", null, commandcell);
+          addPoints.textContent = " 🖍";
+          addPoints.href = "#";
+          L.DomEvent.on(addPoints, "click", (ev) => {
+            L.DomEvent.stop(ev);
+            this.ZonedrawHandler.zoneID = z.id;
+            this.ZonedrawHandler.enable();
+          });
+        } else {
+          const delPoints = L.DomUtil.create("a", null, commandcell);
+          delPoints.textContent = " 🧽";
+          delPoints.href = "#";
+          L.DomEvent.on(delPoints, "click", (ev) => {
+            L.DomEvent.stop(ev);
+            getSelectedOperation().removeZonePoints(z.id);
+          });
+        }
+        if (this.ZonedrawHandler && this.ZonedrawHandler.enabled()) {
+          const stopDrawing = L.DomUtil.create("a", null, commandcell);
+          stopDrawing.href = "#";
+          stopDrawing.textContent = " 🛑";
+          L.DomEvent.on(stopDrawing, "click", (ev) => {
+            L.DomEvent.stop(ev);
+            this.ZonedrawHandler.disable();
+            this.update();
+          });
+        }
+      }
+    }
+
+    return container;
+  }
+}
+
+export default ZoneDialog;
+
+interface ZonedrawHandlerOptions {
+  parent: ZoneDialog,
+}
+
+class ZonedrawHandler extends L.Handler {
+  zoneID: number;
+  _parent: ZoneDialog;
+  _tooltip: any;
+  _opID: string;
+
+  constructor (options: ZonedrawHandlerOptions) {
+    super(window.map);
+    this.zoneID = 0;
+    this._parent = options.parent;
+  }
+
+  enable () {
+    if (this.enabled() || this.zoneID == 0) {
+      this.disable();
+      return this;
+    }
+    L.Handler.prototype.enable.call(this);
+    return this;
+  }
+
+  addHooks () {
+    L.DomUtil.disableTextSelection();
+
+    this._tooltip = new WTooltip();
+
+    this._opID = getSelectedOperation().ID;
+    this._tooltip.updateContent(this._getTooltipText());
+
+    window.map.on("click", this._click, this);
+    window.map.on("wasabee:op:select", this._opchange, this);
+    window.map.on("keyup", this._keyUpListener, this);
+    window.map.on("mousemove", this._onMouseMove, this);
+  }
+
+  removeHooks () {
+    L.DomUtil.enableTextSelection();
+    this._tooltip.dispose();
+    this._tooltip = null;
+
+    window.map.off("click", this._click, this);
+    window.map.off("wasabee:op:select", this._opchange, this);
+    window.map.off("keyup", this._keyUpListener, this);
+    window.map.off("mousemove", this._onMouseMove, this);
+  }
+
+  _opchange () {
+    if (!this.enabled()) return;
+
+    if (getSelectedOperation().ID != this._opID) {
+      console.log("operation changed mid-zonedraw - disabling");
+      this.disable();
+    }
+  }
+
+  _keyUpListener (e: L.LeafletKeyboardEvent) {
+    if (!this.enabled()) return;
+
+    // [esc]
+    if (e.originalEvent.keyCode === 27) {
+      this.disable();
+      this._parent.update();
+    }
+  }
+
+  _click (e) {
+    getSelectedOperation().addZonePoint(this.zoneID, e.latlng);
+  }
+
+  _onMouseMove (e: L.LeafletMouseEvent) {
+    if (e.latlng) {
+      this._tooltip.updatePosition(e.latlng);
+    }
+    L.DomEvent.preventDefault(e.originalEvent);
+  }
+
+  _getTooltipText () {
+    return { text: wX("ZONE_DRAW") };
+  }
+}

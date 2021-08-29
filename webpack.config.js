@@ -11,11 +11,15 @@ module.exports = {
     path: outputPath,
     filename: "[name]-bundle.js",
   },
+  devtool: "source-map",
   resolve: {
     modules: ["node_modules"],
+    extensions: ["ts"],
   },
   module: {
     rules: [
+      { test: /\.tsx?$/, loader: "ts-loader" },
+      { test: /\.js$/, loader: "source-map-loader" },
       {
         test: /\.(png|gif|svg)$/,
         use: "url-loader",
