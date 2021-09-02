@@ -3,21 +3,21 @@ import WasabeeMe from "../model/me";
 import { fullSync } from "../uiCommands";
 import wX from "../wX";
 
-const SyncButton = WButton.extend({
-  statics: {
-    TYPE: "syncButton",
-  },
 
-  update: function () {
+class SyncButton extends WButton {
+  static TYPE = "syncButton";
+
+  update () {
     const loggedIn = WasabeeMe.isLoggedIn();
     if (loggedIn) {
       this.button.style.display = "block";
     } else {
       this.button.style.display = "none";
     }
-  },
+  }
 
-  initialize: function (container) {
+  constructor (container) {
+    super(container);
     this.type = SyncButton.TYPE;
     // this.handler = null; // no handler since we do it all in this.Wupdate()
     this.title = wX("SYNC");
@@ -48,7 +48,7 @@ const SyncButton = WButton.extend({
 
     // hide or show depeneding on logged in state
     this.update(); // container & operation not needed
-  },
-});
+  }
+}
 
 export default SyncButton;

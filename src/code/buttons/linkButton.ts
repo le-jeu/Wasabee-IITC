@@ -3,18 +3,16 @@ import LinkDialog from "../dialogs/linkDialog";
 import AutodrawsDialog from "../dialogs/autodraws";
 import wX from "../wX";
 
-const LinkButton = WButton.extend({
-  statics: {
-    TYPE: "LinkButton",
-  },
 
-  needWritePermission: true,
+class LinkButton extends WButton {
+  static TYPE = "LinkButton";
 
-  initialize: function (container) {
+  needWritePermission = true;
+
+  constructor (container) {
+    super(container);
     this.type = LinkButton.TYPE;
     this.title = wX("LINKS BUTTON TITLE");
-    this.handler = this._toggleActions;
-    this._container = container;
 
     this.button = this._createButton({
       container: this._container,
@@ -35,9 +33,9 @@ const LinkButton = WButton.extend({
       newSubActions.style.display = this.actionsContainer.style.display;
       this.actionsContainer = newSubActions;
     });
-  },
+  }
 
-  getSubActions: function () {
+  getSubActions () {
     return [
       {
         title: wX("ADD LINK TITLE"),
@@ -60,11 +58,11 @@ const LinkButton = WButton.extend({
         context: this,
       },
     ];
-  },
+  }
 
   // enable: // default is good
   // disable: // default is good
-  // Wupdate: function() { // nothing to do }
-});
+  // Wupdate() { // nothing to do }
+}
 
 export default LinkButton;

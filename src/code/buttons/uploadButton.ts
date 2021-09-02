@@ -11,18 +11,18 @@ import ConfirmDialog from "../dialogs/confirmDialog";
 import MergeDialog from "../dialogs/mergeDialog";
 import wX from "../wX";
 
-const UploadButton = WButton.extend({
-  statics: {
-    TYPE: "uploadButton",
-  },
 
-  needWritePermission: true,
+class UploadButton extends WButton {
+  static TYPE = "uploadButton";
 
-  initialize: function (container) {
+  needWritePermission = true;
+
+  constructor (container) {
+    super(container)
     this.type = UploadButton.TYPE;
     // this.handler = null;
     const operation = getSelectedOperation();
-    this.title = wX("UPLOAD BUTTON HOVER", operation.name);
+    this.title = wX("UPLOAD BUTTON HOVER", { opName: operation.name });
     this._container = container;
 
     this.button = this._createButton({
@@ -62,9 +62,9 @@ const UploadButton = WButton.extend({
     });
 
     window.map.on("wasabee:ui:skin wasabee:ui:lang", this.update, this);
-  },
+  }
 
-  update: function () {
+  update () {
     if (!WasabeeMe.isLoggedIn()) {
       this._invisible();
       this.title = wX("NOT LOGGED IN SHORT");
@@ -104,20 +104,20 @@ const UploadButton = WButton.extend({
     this._visible();
     this.title = wX("UPDATE HOVER", { opName: operation.name });
     this.button.title = this.title;
-  },
+  }
 
-  _visible: function () {
+  _visible () {
     this.button.style.display = "block";
-  },
+  }
 
-  _invisible: function () {
+  _invisible () {
     this.button.style.display = "none";
-  },
+  }
 
   // update operation that is either
   // - selectedOP if no conflict or rebase is disabled
   // - rebase temp op otherwise
-  doUpdate: async function (operation, force = false) {
+  async doUpdate (operation, force = false) {
     const rebaseOnUpdate =
       localStorage[window.plugin.wasabee.static.constants.REBASE_UPDATE_KEY] !==
       "false";
@@ -164,7 +164,7 @@ const UploadButton = WButton.extend({
       this.button.classList.remove("loading");
       return;
     }
-  },
-});
+  }
+}
 
 export default UploadButton;

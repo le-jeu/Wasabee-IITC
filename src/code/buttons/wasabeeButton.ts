@@ -13,21 +13,27 @@ import { logoutPromise } from "../server";
 import { postToFirebase } from "../firebaseSupport";
 import { resetCaches } from "../uiCommands";
 
-const WasabeeButton = WButton.extend({
-  statics: {
-    TYPE: "wasabeeButton",
-  },
 
-  initialize: function (container) {
+class WasabeeButton extends WButton {
+  static TYPE = "wasabeeButton";
+  _lastLoginState: boolean;
+  _loginAction: any;
+  _logoutAction: any;
+  _teamAction: any;
+  _alwaysActions: any;
+  _Dactions: any;
+  _SettingsActions: any;
+
+  constructor (container) {
+    super(container);
     this.type = WasabeeButton.TYPE;
     this.title = wX("WASABEE BUTTON TITLE");
-    this.handler = this._toggleActions;
     this._container = container;
 
     this.button = this._createButton({
       container: container,
       className: "wasabee-toolbar-wasabee",
-      callback: this.handler,
+      callback: this._toggleActions,
       context: this,
       title: this.title,
     });
@@ -51,9 +57,9 @@ const WasabeeButton = WButton.extend({
     });
 
     this.update();
-  },
+  }
 
-  _getActions: function () {
+  _getActions () {
     let tmp = [];
     if (!this._lastLoginState) {
       tmp = [this._loginAction];
@@ -73,9 +79,9 @@ const WasabeeButton = WButton.extend({
     tmp = tmp.concat(this._SettingsActions);
 
     return this._createSubActions(tmp);
-  },
-
-  _buildActions: function () {
+  }
+  
+  _buildActions () {
     this._loginAction = {
       title: wX("LOG IN"),
       text: wX("LOG IN"),
@@ -197,9 +203,9 @@ const WasabeeButton = WButton.extend({
         context: this,
       },
     ];
-  },
+  }
 
-  update: function () {
+  update () {
     // takes container and operation as args, but we don't need them
     const loggedIn = WasabeeMe.isLoggedIn();
 
@@ -214,7 +220,7 @@ const WasabeeButton = WButton.extend({
       old.parentNode.replaceChild(this.actionsContainer, old);
       this.disable();
     }
-  },
-});
+  }
+}
 
 export default WasabeeButton;

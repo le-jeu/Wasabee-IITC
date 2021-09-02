@@ -6,16 +6,14 @@ import ExportDialog from "../dialogs/exportDialog";
 import KeysList from "../dialogs/keysList";
 import wX from "../wX";
 
-const OpButton = WButton.extend({
-  statics: {
-    TYPE: "opButton",
-  },
 
-  initialize: function (container) {
+class OpButton extends WButton {
+  static TYPE = "opButton";
+
+  constructor (container) {
+    super(container);
     this.type = OpButton.TYPE;
     this.title = wX("OP_BUTTON");
-    this.handler = this._toggleActions;
-    this._container = container;
 
     this.button = this._createButton({
       container: this._container,
@@ -36,9 +34,9 @@ const OpButton = WButton.extend({
       newSubActions.style.display = this.actionsContainer.style.display;
       this.actionsContainer = newSubActions;
     });
-  },
+  }
 
-  getSubActions: function () {
+  getSubActions () {
     return [
       {
         title: wX("OP_SETTINGS_TITLE"),
@@ -91,11 +89,11 @@ const OpButton = WButton.extend({
         context: this,
       },
     ];
-  },
+  }
 
   // enable: // default is good
   // disable: // default is good
-  // Wupdate: function() { // nothing to do }
-});
+  // Wupdate() { // nothing to do }
+}
 
 export default OpButton;

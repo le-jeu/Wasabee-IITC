@@ -4,15 +4,22 @@ import { getSelectedOperation } from "../selectedOp";
 import { postToFirebase } from "../firebaseSupport";
 
 import PortalUI from "../ui/portal";
+import WasabeeOp from "../model/operation";
+import WasabeePortal from "../model/portal";
 
-const QuickdrawButton = WButton.extend({
-  statics: {
-    TYPE: "QuickdrawButton",
-  },
 
-  needWritePermission: true,
+class QuickdrawButton extends WButton {
+  static TYPE = "QuickdrawButton";
 
-  initialize: function (container) {
+  needWritePermission = true;
+  handler: QuickDrawControl;
+  picker: HTMLInputElement;
+  _changeColorSubAction: { title: any; text: any; html: any; callback: () => void; context: any; };
+  _toggleModeSubAction: { title: any; text: any; callback: () => void; context: any; };
+  _endSubAction: { title: any; text: any; callback: () => QuickDrawControl; context: QuickDrawControl; };
+
+  constructor (container) {
+    super(container);
     this.title = wX("QD TITLE");
     this.handler = new QuickDrawControl({ button: this });
     this._container = container;
@@ -32,7 +39,7 @@ const QuickdrawButton = WButton.extend({
     this.picker.setAttribute("list", "wasabee-colors-datalist");
 
     L.DomEvent.on(this.picker, "change", (ev) => {
-      this.handler._nextDrawnLinksColor = ev.target.value;
+      this.handler._nextDrawnLinksColor = (ev.target as HTMLInputElement).value;
     });
 
     this.actionsContainer = this._createSubActions(this.getSubActions());
@@ -46,14 +53,14 @@ const QuickdrawButton = WButton.extend({
       newSubActions.style.display = this.actionsContainer.style.display;
       this.actionsContainer = newSubActions;
 
-      if (this.handler._enabled)
+      if (this.handler.enabled())
         this.handler._tooltip.updateContent(this.handler._getTooltipText());
     });
 
     this.update();
-  },
+  }
 
-  getSubActions: function () {
+  getSubActions () {
     this._changeColorSubAction = {
       title: wX("QD BUTTON CHANGE COLOR"),
       text: wX("QD CHANGE COLOR"),
@@ -85,53 +92,70 @@ const QuickdrawButton = WButton.extend({
       this._changeColorSubAction,
       this._endSubAction,
     ];
-  },
+  }
 
-  enable: function () {
+  enable () {
     WButton.prototype.enable.call(this);
     this.button.classList.add("active");
-  },
+  }
 
-  disable: function () {
+  disable () {
     WButton.prototype.disable.call(this);
-    if (this.handler._enabled) this.handler.disable.call(this.handler);
+    if (this.handler.enabled()) this.handler.disable.call(this.handler);
     this.button.classList.remove("active");
-  },
-});
+  }
+}
 
-const QuickDrawControl = L.Handler.extend({
-  initialize: function (options) {
-    this._container = window.map._container;
+class QuickDrawControl extends L.Handler {
+  _nextDrawnLinksColor: string;
+  _tooltip: WTooltip;
+  _container: HTMLElement;
+  options: { button: QuickdrawButton };
+  type: string;
+  _drawMode: string;
+  _operation: WasabeeOp;
+  _opID: string;
+  _anchor: WasabeePortal;
+  _anchor1: WasabeePortal;
+  _anchor2: WasabeePortal;
+  _previous: WasabeePortal;
+  _throwOrder: number;
+  _guideLayerGroup: L.LayerGroup;
+  _guideA: any;
+  _guideB: any;
 
-    L.Handler.prototype.initialize.call(this, window.map, options);
-    this.options = options;
-    // L.Util.extend(this.options, options);
+  constructor (options: { button: QuickdrawButton }) {
+    super(window.map);
+    this._container = window.map.getContainer();
+    L.setOptions(this, options);
 
     this.type = "QuickDrawControl";
     this._drawMode = "quickdraw";
-  },
+  }
 
-  enable: function () {
-    if (this._enabled) {
+  enable () {
+    if (this.enabled()) {
       this.disable();
-      return;
+      return this;
     }
     L.Handler.prototype.enable.call(this);
     this.options.button.enable();
     postToFirebase({ id: "analytics", action: "quickdrawStart" });
-  },
+    return this;
+  }
 
-  disable: function () {
-    if (!this._enabled) return;
+  disable () {
+    if (!this.enabled()) return this;
     L.Handler.prototype.disable.call(this);
     this.options.button.disable();
     postToFirebase({ id: "analytics", action: "quickdrawEnd" });
-  },
+    return this;
+  }
 
-  addHooks: function () {
+  addHooks () {
     L.DomUtil.disableTextSelection();
 
-    this._tooltip = new WTooltip(this._map);
+    this._tooltip = new WTooltip();
 
     this._operation = getSelectedOperation();
     this._nextDrawnLinksColor = this._operation.color;
@@ -147,9 +171,9 @@ const QuickDrawControl = L.Handler.extend({
     window.map.on("wasabee:op:select", this._opchange, this);
     window.map.on("keyup", this._keyUpListener, this);
     window.map.on("mousemove", this._onMouseMove, this);
-  },
+  }
 
-  removeHooks: function () {
+  removeHooks () {
     if (this._guideLayerGroup) {
       window.removeLayerGroup(this._guideLayerGroup);
       this._guideLayerGroup = null;
@@ -170,20 +194,20 @@ const QuickDrawControl = L.Handler.extend({
     window.map.off("wasabee:op:select", this._opchange, this);
     window.map.off("keyup", this._keyUpListener, this);
     window.map.off("mousemove", this._onMouseMove, this);
-  },
+  }
 
-  _opchange: function () {
+  _opchange () {
     postToFirebase({ id: "analytics", action: "quickdrawOpchange" });
-    if (!this._enabled) return;
+    if (!this.enabled()) return;
 
     if (getSelectedOperation().ID != this._opID) {
       console.log("operation changed mid-quickdraw - disabling");
       this.disable();
     }
-  },
+  }
 
-  _keyUpListener: function (e) {
-    if (!this._enabled) return;
+  _keyUpListener (e) {
+    if (!this.enabled()) return;
 
     // [esc]
     if (e.originalEvent.keyCode === 27) {
@@ -202,24 +226,24 @@ const QuickDrawControl = L.Handler.extend({
       this._operation.clearAllLinks();
       window.map.fire("wasabee:crosslinks");
     }
-  },
+  }
 
-  _onMouseMove: function (e) {
+  _onMouseMove (e) {
     if (e.latlng) {
       this._tooltip.updatePosition(e.latlng);
       this._guideUpdate(e);
     }
     L.DomEvent.preventDefault(e.originalEvent);
-  },
+  }
 
-  _guideUpdate: function (e) {
+  _guideUpdate (e) {
     if (!this._guideLayerGroup) return;
-    for (const l of this._guideLayerGroup.getLayers()) {
-      l.setLatLngs([l.options.anchorLL, e.latlng]);
+    for (const l of this._guideLayerGroup.getLayers() as L.Polyline[]) {
+      l.setLatLngs([l.getLatLngs()[0], e.latlng]);
     }
-  },
+  }
 
-  _guideLayerToggle: function () {
+  _guideLayerToggle () {
     if (!this._guideLayerGroup) {
       this._guideLayerGroup = new L.LayerGroup();
       window.addLayerGroup(
@@ -229,14 +253,13 @@ const QuickDrawControl = L.Handler.extend({
       );
       if (this._guideA) this._guideA.addTo(this._guideLayerGroup);
       if (this._guideB) this._guideB.addTo(this._guideLayerGroup);
-      window.Render.prototype.bringPortalsToFront();
     } else {
       window.removeLayerGroup(this._guideLayerGroup);
       this._guideLayerGroup = null;
     }
-  },
+  }
 
-  _getTooltipText: function () {
+  _getTooltipText () {
     if (this._drawMode === "quickdraw") {
       if (!this._anchor1) return { text: wX("QDSTART") };
       if (!this._anchor2) return { text: wX("QDNEXT") };
@@ -251,9 +274,9 @@ const QuickDrawControl = L.Handler.extend({
     // XXX wX this
     if (!this._previous) return { text: "Click first portal" };
     return { text: "Click next portal" };
-  },
+  }
 
-  _portalClicked: function (portal) {
+  _portalClicked (portal) {
     const selectedPortal = PortalUI.fromIITC(portal);
     if (!selectedPortal) {
       // XXX wX this
@@ -269,9 +292,9 @@ const QuickDrawControl = L.Handler.extend({
     } else {
       this._portalClickedSingle(selectedPortal);
     }
-  },
+  }
 
-  _portalClickedQD: function (selectedPortal) {
+  _portalClickedQD (selectedPortal) {
     const guideStyle =
       window.plugin.wasabee.static.constants.QUICKDRAW_GUIDE_STYLE;
     guideStyle.anchorLL = selectedPortal.latLng;
@@ -283,6 +306,7 @@ const QuickDrawControl = L.Handler.extend({
       localStorage[window.plugin.wasabee.static.constants.ANCHOR_ONE_KEY] =
         JSON.stringify(this._anchor1);
 
+      // @ts-ignore
       this._guideA = L.geodesicPolyline(
         [selectedPortal.latLng, selectedPortal.latLng],
         guideStyle
@@ -301,6 +325,7 @@ const QuickDrawControl = L.Handler.extend({
       this._tooltip.updateContent(this._getTooltipText());
       localStorage[window.plugin.wasabee.static.constants.ANCHOR_TWO_KEY] =
         JSON.stringify(this._anchor2);
+      // @ts-ignore
       this._guideB = L.geodesicPolyline(
         [selectedPortal.latLng, selectedPortal.latLng],
         guideStyle
@@ -318,9 +343,9 @@ const QuickDrawControl = L.Handler.extend({
       color: this._nextDrawnLinksColor,
     });
     this._tooltip.updateContent(this._getTooltipText());
-  },
+  }
 
-  _toggleMode: function () {
+  _toggleMode () {
     // changing mode resets all the things
     this._anchor = null;
     this._anchor1 = null;
@@ -341,9 +366,9 @@ const QuickDrawControl = L.Handler.extend({
       this._drawMode = "quickdraw";
     }
     this._tooltip.updateContent(this._getTooltipText());
-  },
+  }
 
-  _portalClickedSingle: function (selectedPortal) {
+  _portalClickedSingle (selectedPortal) {
     // IITC sending 2 portalClicked for 1 mouse click
     if (this._previous && this._previous.id == selectedPortal.id) {
       return;
@@ -362,6 +387,7 @@ const QuickDrawControl = L.Handler.extend({
     guideStyle.anchorLL = selectedPortal.latLng;
 
     if (this._guideA) this._guideA.remove();
+    // @ts-ignore
     this._guideA = L.geodesicPolyline(
       [selectedPortal.latLng, selectedPortal.latLng],
       guideStyle
@@ -369,9 +395,9 @@ const QuickDrawControl = L.Handler.extend({
     if (this._guideLayerGroup) this._guideA.addTo(this._guideLayerGroup);
     this._previous = selectedPortal;
     this._tooltip.updateContent(this._getTooltipText());
-  },
+  }
 
-  _portalClickedStar: function (selectedPortal) {
+  _portalClickedStar (selectedPortal) {
     // IITC sending 2 portalClicked for 1 mouse click
     if (this._anchor && this._anchor.id == selectedPortal.id) {
       return;
@@ -390,13 +416,14 @@ const QuickDrawControl = L.Handler.extend({
     guideStyle.anchorLL = this._anchor.latLng;
 
     if (this._guideA) this._guideA.remove();
+    // @ts-ignore
     this._guideA = L.geodesicPolyline(
       [this._anchor.latLng, selectedPortal.latLng],
       guideStyle
     );
     if (this._guideLayerGroup) this._guideA.addTo(this._guideLayerGroup);
     this._tooltip.updateContent(this._getTooltipText());
-  },
-});
+  }
+}
 
 export default QuickdrawButton;

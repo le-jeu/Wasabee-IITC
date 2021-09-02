@@ -4,15 +4,14 @@ import MarkerList from "../dialogs/markerList";
 import { getSelectedOperation } from "../selectedOp";
 import wX from "../wX";
 
-const MarkerButton = WButton.extend({
-  statics: {
-    TYPE: "MarkerButton",
-  },
 
-  initialize: function (container) {
+class MarkerButton extends WButton {
+  static TYPE = "MarkerButton";
+
+  constructor (container) {
+    super(container);
     this.type = MarkerButton.TYPE;
     this.title = wX("MARKERS BUTTON TITLE");
-    this.handler = this._toggleActions;
     this._container = container;
 
     this.button = this._createButton({
@@ -28,17 +27,17 @@ const MarkerButton = WButton.extend({
     this._container.appendChild(this.actionsContainer);
 
     window.map.on("wasabee:ui:skin wasabee:ui:lang", this.update, this);
-  },
+  }
 
-  update: function () {
+  update () {
     this.button.title = wX("MARKERS BUTTON TITLE");
     const newSubActions = this._createSubActions(this.getSubActions());
     this._container.replaceChild(newSubActions, this.actionsContainer);
     newSubActions.style.display = this.actionsContainer.style.display;
     this.actionsContainer = newSubActions;
-  },
+  }
 
-  getSubActions: function () {
+  getSubActions () {
     const subActions = [];
     const op = getSelectedOperation();
     if (op.canWrite())
@@ -63,11 +62,11 @@ const MarkerButton = WButton.extend({
       context: this,
     });
     return subActions;
-  },
+  }
 
   // enable: // default is good
   // disable: // default is good
-  // Wupdate: function() { // nothing to do }
-});
+  // Wupdate() { // nothing to do }
+}
 
 export default MarkerButton;
