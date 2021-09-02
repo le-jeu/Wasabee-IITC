@@ -5,7 +5,7 @@ import OpsDialog from "../dialogs/opsDialog";
 import AuthDialog from "../dialogs/authDialog";
 import ConfirmDialog from "../dialogs/confirmDialog";
 import NewopDialog from "../dialogs/newopDialog";
-import SettingsDialog from "../dialogs/settingsDialog.js";
+import SettingsDialog from "../dialogs/settingsDialog";
 import { resetOps, setupLocalStorage, removeNonOwnedOps } from "../selectedOp";
 import DefensiveKeysDialog from "../dialogs/defensiveKeysDialog";
 import { wX } from "../wX";
@@ -80,7 +80,7 @@ class WasabeeButton extends WButton {
 
     return this._createSubActions(tmp);
   }
-  
+
   _buildActions () {
     this._loginAction = {
       title: wX("LOG IN"),

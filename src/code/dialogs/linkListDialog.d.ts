@@ -1,7 +1,7 @@
-import OperationChecklistDialog from "./checklist.js";
-import { WDialogOptions } from "../leafletClasses.js";
-import WasabeePortal from "../model/portal.js";
-import WasabeeOp from "../model/operation.js";
+import OperationChecklistDialog from "./checklist";
+import { WDialogOptions } from "../leafletClasses";
+import WasabeePortal from "../model/portal";
+import WasabeeOp from "../model/operation";
 interface LinkListDialogOptions extends WDialogOptions {
     portal: WasabeePortal;
 }
