@@ -57,5 +57,5 @@ export * from "./core/boot";
 export * from "./core/constants";
 
 declare global {
-const L: typeof L;
+	const L: typeof L;
 }

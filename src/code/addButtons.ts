@@ -1,4 +1,4 @@
-import { ButtonsControl } from "./leafletClasses";
+import { ButtonsControl, ButtonsControlOptions, WButton } from "./leafletClasses";
 import QuickdrawButton from "./buttons/quickdrawButton";
 import WasabeeButton from "./buttons/wasabeeButton";
 import SyncButton from "./buttons/syncButton";
@@ -7,17 +7,19 @@ import LinkButton from "./buttons/linkButton";
 import MarkerButton from "./buttons/markerButton";
 import UploadButton from "./buttons/uploadButton";
 
+
 /* This function adds the plugin buttons on the left side of the screen */
 export function addButtons() {
   if (window.plugin.wasabee.buttons) {
     return;
   }
 
-  const options = {};
+  const options : ButtonsControlOptions = {
+    container: L.DomUtil.create("ul", "leaflet-bar"),
+    position: "topleft",
+    buttons: new Map(),
+  };
   // XXX next refactor pass, don't require a container to be passed in, get the formatting on ButtonsControl.onAdd()
-  options.container = L.DomUtil.create("ul", "leaflet-bar");
-  options.position = "topleft";
-  options.buttons = new Map();
   for (const Constructor of [
     WasabeeButton,
     OpButton,
@@ -28,7 +30,7 @@ export function addButtons() {
     UploadButton,
   ]) {
     const item = L.DomUtil.create("li", null, options.container);
-    const button = new Constructor(item);
+    const button : WButton = new Constructor(item);
     options.buttons.set(button.type, button);
   }
 

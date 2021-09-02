@@ -1,50 +1,67 @@
-export const WTooltip = L.Class.extend({
-  initialize: function (map) {
-    this._map = map;
+
+export class WTooltip extends L.Class {
+  _pane: HTMLElement;
+  _container: HTMLDivElement;
+  constructor () {
+    super();
     // this._pane = map._panes.popupPane;
-    this._pane = map._panes.tooltipPane;
+    this._pane = window.map.getPane("tooltip");
 
     this._container = L.DomUtil.create("div", "wasabee-tooltip", this._pane);
     L.DomUtil.addClass(this._container, "wasabee-tooltip-single");
-  },
+  }
 
-  dispose: function () {
+  dispose () {
     this._pane.removeChild(this._container);
     this._container = null;
-  },
+  }
 
-  updateContent: function (labelText) {
+  updateContent (labelText) {
     // const span = L.DomUtil.create("span", null, this._container);
     this._container.textContent = labelText.text;
     return this;
-  },
+  }
 
-  updatePosition: function (latlng) {
-    const pos = this._map.latLngToLayerPoint(latlng);
+  updatePosition (latlng: L.LatLngExpression) {
+    const pos = window.map.latLngToLayerPoint(latlng);
     L.DomUtil.setPosition(this._container, pos);
     return this;
-  },
+  }
 
-  showAsError: function () {
+  showAsError () {
     L.DomUtil.addClass(this._container, "wasabee-error-tooltip");
     return this;
-  },
+  }
 
-  removeError: function () {
+  removeError () {
     L.DomUtil.removeClass(this._container, "wasabee-error-tooltip");
     return this;
-  },
-});
+  }
+}
+
+type WPaneEvent = L.LeafletEvent & {
+  pane: string,
+  dialog: WDialog,
+}
+
+type WPaneOptions = {
+  paneId: string,
+  paneName: string,
+  default?: () => WDialog
+}
 
 // Android pane
-export const WPane = L.Handler.extend({
-  options: {
+export class WPane extends L.Handler {
+  options: WPaneOptions = {
     paneId: "wasabee",
     paneName: "Wasabee",
-    default: null,
-  },
+  };
 
-  initialize: function (options) {
+  _dialog: WDialog;
+  _container: HTMLDivElement;
+
+  constructor(options: WPaneOptions) {
+    super(window.map);
     L.setOptions(this, options);
     if (window.useAndroidPanes())
       android.addPane(this.options.paneId, this.options.paneName);
@@ -57,57 +74,61 @@ export const WPane = L.Handler.extend({
       "wasabee-pane hidden",
       document.body
     );
-    window.map.on("wasabee:pane:set", (data) => {
-      if (data.pane !== this.options.paneId) return;
+    window.map.on("wasabee:pane:set", (data: WPaneEvent) => {
+      const { pane, dialog } = data;
+      if (pane !== this.options.paneId) return;
       if (this._dialog) this._dialog.closeDialog();
-      this._dialog = data.dialog;
+      this._dialog = dialog;
       this._container.textContent = "";
       this._container.appendChild(this._dialog._container);
-      window.show(data.pane);
+      window.show(pane);
     });
-    window.map.on("wasabee:pane:clear", (data) => {
+    window.map.on("wasabee:pane:clear", (data: WPaneEvent) => {
       if (data.pane !== this.options.paneId) return;
       if (this._dialog === data.dialog) delete this._dialog;
     });
-  },
+  }
 
-  addHooks: function () {
+  addHooks () {
     this._container.classList.remove("hidden");
     if (!this._dialog && this.options.default) {
       const defaultDialog = this.options.default();
       defaultDialog.enable();
     }
-  },
+  }
 
-  removeHooks: function () {
+  removeHooks () {
     this._container.classList.add("hidden");
-  },
-});
+  }
+}
 
-export const WDialog = L.Handler.extend({
-  statics: {
-    TYPE: "Unextended Wasabee Dialog",
-  },
+export interface WDialogOptions {
+  [propName: string]: any,
+}
 
-  needWritePermission: false,
+export class WDialog extends L.Handler {
+  usePane: boolean = false;
+  paneId: string = "wasabee";
+  needWritePermission: boolean = false;
 
-  options: {
-    usePane: false,
-    paneId: "wasabee",
-  },
+  options: WDialogOptions;
 
-  initialize: function (options) {
+  _smallScreen: boolean;
+  _dialog: JQuery<HTMLElement> | null;
+  _container: HTMLDivElement;
+  _header: HTMLDivElement;
+  _content: HTMLDivElement;
+  _buttons: HTMLDivElement;
+
+  constructor(options?: WDialogOptions) {
+    super(window.map);
     L.setOptions(this, options);
     // determine large or small screen dialog sizes
     this._smallScreen = this._isMobile();
     window.map.fire("wdialog", this);
-    this.options.usePane =
-      this.options.usePane &&
-      window.isSmartphone() &&
-      localStorage[window.plugin.wasabee.static.constants.USE_PANES] === "true";
-  },
+  }
 
-  addHooks: function () {
+  addHooks () {
     window.map.on("wasabee:ui:skin", this.update, this);
     window.map.on("wasabee:ui:lang", this.update, this);
     // don't use child method
@@ -116,9 +137,14 @@ export const WDialog = L.Handler.extend({
       WDialog.prototype.onOpChange,
       this
     );
-  },
 
-  removeHooks: function () {
+    this.usePane =
+      this.usePane &&
+      window.isSmartphone() &&
+      localStorage[window.plugin.wasabee.static.constants.USE_PANES] === "true";
+  }
+
+  removeHooks () {
     window.map.off("wasabee:ui:skin", this.update, this);
     window.map.off("wasabee:ui:lang", this.update, this);
     window.map.off(
@@ -126,9 +152,9 @@ export const WDialog = L.Handler.extend({
       WDialog.prototype.onOpChange,
       this
     );
-  },
+  }
 
-  onOpChange: function () {
+  onOpChange () {
     if (this.needWritePermission) {
       // avoid import loop
       const op = window.plugin.wasabee._selectedOp;
@@ -136,9 +162,9 @@ export const WDialog = L.Handler.extend({
         if (this._dialog) this.closeDialog();
       }
     }
-  },
+  }
 
-  enable: function () {
+  enable () {
     if (this.needWritePermission) {
       // avoid import loop
       const op = window.plugin.wasabee._selectedOp;
@@ -146,17 +172,16 @@ export const WDialog = L.Handler.extend({
         return;
       }
     }
-    L.Handler.prototype.enable.call(this);
-  },
+    return L.Handler.prototype.enable.call(this);
+  }
 
-  update: function () {},
+  update () {}
 
-  createDialog: function (options) {
-    this.options.title = options.title;
+  createDialog (options: DialogOptions) {
     options.dialogClass =
       "wasabee-dialog wasabee-dialog-" + options.dialogClass;
     if (this._smallScreen) options.dialogClass += " wasabee-small-screen";
-    if (this.options.usePane) {
+    if (this.usePane) {
       this._container = L.DomUtil.create("div", options.dialogClass);
       if (options.id) this._container.id = options.id;
 
@@ -164,7 +189,7 @@ export const WDialog = L.Handler.extend({
       if (options.title) this._header.textContent = options.title;
 
       this._content = L.DomUtil.create("div", "content", this._container);
-      if (options.html) this._content.appendChild(options.html);
+      if (options.html) this._content.appendChild(options.html as HTMLElement);
 
       this._buttons = L.DomUtil.create("div", "buttonset", this._container);
       if (options.buttons) {
@@ -176,12 +201,12 @@ export const WDialog = L.Handler.extend({
         }
         for (const entry of options.buttons) {
           const button = L.DomUtil.create("button", null, this._buttons);
-          button.textContent = entry.text;
+          button.textContent = entry.text as string;
           L.DomEvent.on(button, "click", entry.click);
         }
       }
       window.map.fire("wasabee:pane:set", {
-        pane: this.options.paneId,
+        pane: this.paneId,
         dialog: this,
       });
     } else {
@@ -196,51 +221,62 @@ export const WDialog = L.Handler.extend({
       if (options.buttons)
         this._dialog.dialog("option", "buttons", options.buttons);
     }
-  },
+  }
 
-  setTitle: function (title) {
+  setTitle (title: string) {
     if (this._dialog) this._dialog.dialog("option", "title", title);
     else if (this._header) this._header.textContent = title;
-  },
+  }
 
-  setContent: function (content) {
+  setContent (content: HTMLElement | string) {
     if (this._dialog) this._dialog.html(content);
     else if (this._container) {
       this._content.textContent = "";
-      this._content.appendChild(content);
+      this._content.append(content);
     }
-  },
+  }
 
-  closeDialog: function () {
+  closeDialog () {
     if (this._dialog) {
       this._dialog.dialog("close");
       delete this._dialog;
     } else if (this._container) {
       window.map.fire("wasabee:pane:clear", {
-        pane: this.options.paneId,
+        pane: this.paneId,
         dialog: this,
       });
       this.disable();
       delete this._container;
       window.show("map");
     }
-  },
+  }
 
-  _isMobile: function () {
+  _isMobile () {
     // return true;
     // XXX this is a cheap hack -- determine a better check
     if (window.plugin.userLocation) return true;
     return false;
-  },
-});
+  }
+}
+
+export interface ButtonsControlOptions extends L.ControlOptions {
+  buttons: Map<string, WButton>;
+  container: HTMLElement,
+}
 
 // the wrapper class for the buttons
 // pass in the WButtons as a Map in options.buttons
-export const ButtonsControl = L.Control.extend({
+export class ButtonsControl extends L.Control {
   // options: { position: "topleft", },
 
+  options: ButtonsControlOptions;
+
+  constructor (options: ButtonsControlOptions) {
+    super(options);
+  }
+
   // From L.Control: onAdd is called when this is added to window.map
-  onAdd: function () {
+  onAdd () {
     // allow the buttons to call this ButtonsControl...
     for (const b of this.options.buttons.values()) {
       b.setControl(this);
@@ -253,64 +289,66 @@ export const ButtonsControl = L.Control.extend({
     window.map.on("wasabee:op:select wasabee:op:change", this.update, this);
 
     return outerDiv;
-  },
+  }
 
-  onRemove: function () {
+  onRemove () {
     window.map.off("wasabee:op:select wasabee:op:change", this.update, this);
     window.map.off("wasabee:login wasabee:logout", this.update, this);
-  },
+  }
 
   // called on skin, lang, login/logout and op change/select
-  update: function () {
+  update () {
     for (const b of this.options.buttons.values()) {
       b.update();
     }
-  },
+  }
 
   // called by a WButton when it is enabled
-  disableAllExcept: function (name) {
+  disableAllExcept (name) {
     for (const [n, b] of this.options.buttons) {
       if (n != name) b.disable();
     }
-  },
+  }
 
   // we could add logic for adding new buttons, removing existing, etc
   // but there is not need at the moment since hiding/showing seems
   // to work fine
-});
+}
 
-export const WButton = L.Class.extend({
-  statics: {
-    TYPE: "unextendedWButton",
-  },
+export type ButtonOptions = {
+  text?: string,
+  html?: HTMLElement,
+  title?: string,
+  container: HTMLElement,
+  callback: () => void,
+  context: any,
+  buttonImage?: string,
+  className?: string,
+}
 
+export class WButton extends L.Class {
   // always have these
-  _enabled: false,
-  title: "Unset",
+  title: string;
+  type: string;
 
-  needWritePermission: false,
+  needWritePermission = false;
+  _enabled: boolean;
+  actionsContainer: HTMLElement;
+  control: ButtonsControl;
+  button: HTMLAnchorElement;
+  _container: HTMLElement;
 
   // make sure all these bases are covered in your button
   // XXX this initializer is not used by any buttons
-  initialize: function (container) {
-    console.log("WButton init");
-
-    this.type = WButton.TYPE;
-    this.title = "Unextended WButton";
+  constructor (container: HTMLElement) {
+    super();
+    this.title = "unkown button";
+    this.type = "unkown button type";
     this._container = container;
-    this.handler = this._toggleActions;
     // this.actionsContainer == the sub menu items created by the individual buttons
+  }
 
-    this.button = this._createButton({
-      container: container,
-      // buttonImage: null,
-      callback: this.handler,
-      context: this,
-      // className: ...,
-    });
-  },
-
-  update: function () {
+  update () {
     if (!this.button || !this.needWritePermission) return;
     const op = window.plugin.wasabee._selectedOp;
     if (op && op.canWrite()) {
@@ -318,38 +356,38 @@ export const WButton = L.Class.extend({
     } else {
       this.button.style.display = "none";
     }
-  },
+  }
 
-  _toggleActions: function () {
+  _toggleActions () {
     if (this._enabled) {
       this.disable();
     } else {
       this.enable();
     }
-  },
+  }
 
-  setControl: function (control) {
+  setControl (control) {
     this.control = control;
-  },
+  }
 
-  disable: function () {
+  disable () {
     if (!this._enabled) return;
     this._enabled = false;
     if (this.actionsContainer) {
       this.actionsContainer.style.display = "none";
     }
-  },
+  }
 
-  enable: function () {
+  enable () {
     if (this._enabled) return;
     if (this.control) this.control.disableAllExcept(this.type);
     this._enabled = true;
     if (this.actionsContainer) {
       this.actionsContainer.style.display = "block";
     }
-  },
+  }
 
-  _createButton: function (options) {
+  _createButton (options: ButtonOptions) {
     const link = L.DomUtil.create(
       "a",
       options.className || "",
@@ -373,9 +411,9 @@ export const WButton = L.Class.extend({
     L.DomEvent.on(link, "click", options.callback, options.context);
 
     return link;
-  },
+  }
 
-  _createSubActions: function (buttons) {
+  _createSubActions (buttons) {
     const container = L.DomUtil.create("ul", "wasabee-actions");
     for (const b of buttons) {
       const li = L.DomUtil.create("li", "wasabee-subactions", container);
@@ -391,5 +429,5 @@ export const WButton = L.Class.extend({
       });
     }
     return container;
-  },
-});
+  }
+}
