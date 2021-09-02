@@ -30,6 +30,17 @@ const STATE_ACKNOWLEDGED = "acknowledged";
 const STATE_COMPLETED = "completed";
 
 export default class WasabeeMarker {
+  ID: string;
+  portalId: string;
+  type: string;
+  comment?: string;
+  order: number;
+  completedID: boolean;
+  assignedTo: string;
+  zone: number;
+
+  _state: "pending" | "assigned" | "acknowledged" | "completed";
+
   // static properties is not supported by eslint yet
   static get markerTypes() {
     return markerTypes;
@@ -70,12 +81,16 @@ export default class WasabeeMarker {
     };
   }
 
-  get opOrder() {
+  get opOrder(): number {
     return this.order;
   }
 
-  set opOrder(o) {
-    this.order = Number.parseInt(o, 10);
+  set opOrder(o: number) {
+    this.order = o;
+  }
+
+  setOrder(o: number | string) {
+    this.order = (+o) || 0;
   }
 
   assign(gid) {

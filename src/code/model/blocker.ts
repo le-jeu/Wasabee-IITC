@@ -1,13 +1,23 @@
+mport type WasabeeOp from "./operation";
+import type WasabeePortal from "./portal";
+
 import db from "../db";
 
 export default class WasabeeBlocker {
+  opID: string;
+  from: string;
+  to: string;
+
+  fromPortal?: WasabeePortal;
+  toPortal?: WasabeePortal;
+
   constructor(obj) {
     this.opID = obj.opID;
     this.from = obj.fromPortal.id;
     this.to = obj.toPortal.id;
   }
 
-  static async addPortal(op, portal) {
+  static async addPortal(op: WasabeeOp, portal: WasabeePortal) {
     const store = await (await db).transaction("blockers_portals", "readwrite")
       .store;
     const ent = {
@@ -25,7 +35,7 @@ export default class WasabeeBlocker {
   }
 
   // return true if a blocker portal is updated
-  static async updatePortal(op, portal) {
+  static async updatePortal(op: WasabeeOp, portal: WasabeePortal) {
     const store = (await db).transaction("blockers_portals", "readwrite").store;
     if (portal.name === portal.id) return false;
     const p = await store.get([op.ID, portal.id]);
@@ -46,7 +56,7 @@ export default class WasabeeBlocker {
     return true;
   }
 
-  static async removeBlocker(op, portalId) {
+  static async removeBlocker(op: WasabeeOp, portalId: string) {
     const store = (await db).transaction("blockers", "readwrite").store;
     let cursor = await store
       .index("from")
@@ -65,7 +75,7 @@ export default class WasabeeBlocker {
     await (await db).delete("blockers_portals", [op.ID, portalId]);
   }
 
-  static async removeBlockers(opID) {
+  static async removeBlockers(opID: string) {
     let store = (await db).transaction("blockers", "readwrite").store;
     let cursor = await store
       .index("opID")
@@ -82,7 +92,7 @@ export default class WasabeeBlocker {
     }
   }
 
-  static async addBlocker(op, fromPortal, toPortal) {
+  static async addBlocker(op: WasabeeOp, fromPortal: WasabeePortal, toPortal: WasabeePortal) {
     const blocker = new WasabeeBlocker({
       opID: op.ID,
       fromPortal: fromPortal,
@@ -94,14 +104,14 @@ export default class WasabeeBlocker {
     await WasabeeBlocker.addPortal(op, toPortal);
   }
 
-  static async getPortals(op) {
+  static async getPortals(op: WasabeeOp) {
     const portals = await (
       await db
     ).getAllFromIndex("blockers_portals", "opID", op.ID);
     return portals;
   }
 
-  static async getAll(op) {
+  static async getAll(op: WasabeeOp) {
     const blockers = await (
       await db
     ).getAllFromIndex("blockers", "opID", op.ID);
@@ -117,3 +127,4 @@ export default class WasabeeBlocker {
     return blockers;
   }
 }
+

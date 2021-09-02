@@ -1,6 +1,15 @@
 import { generateId } from "../auxiliar";
 
+
 export default class WasabeePortal {
+  id: string;
+  name: string;
+  lat: string;
+  lng: string;
+  comment: string;
+  hardness: string;
+  _latLng: L.LatLng;
+  
   constructor(obj) {
     if (typeof obj == "string") {
       try {
@@ -44,7 +53,7 @@ export default class WasabeePortal {
     return this._latLng;
   }
 
-  static fake(lat, lng, id, name) {
+  static fake(lat: string | number, lng: string | number, id?: string, name?: string ) {
     console.assert(lat && lng, "WasabeePortal.fake called w/o lat/lng");
 
     if (!id) id = generateId();

@@ -9,17 +9,21 @@
 function doNothing() {}
 
 export default class Evented {
+  _events: {
+    [propName: string]: Array<{fct: (data: any) => any, context: any}>
+  }
+
   constructor() {
     this._events = {};
   }
 
-  on(event, func, context) {
+  on(event: string, func: (data: any) => any, context?: any) {
     if (!(event in this._events)) this._events[event] = [];
     this._events[event].push({ fct: func, context: context });
     return this;
   }
 
-  off(event, func, context) {
+  off(event: string, func: (data: any) => any, context?: any) {
     const listeners = this._events[event].slice();
     if (listeners) {
       for (const listener of listeners) {
@@ -32,7 +36,7 @@ export default class Evented {
     return this;
   }
 
-  fire(event, data) {
+  fire(event: string, data?: any) {
     const listeners = this._events[event].slice();
     if (listeners) {
       for (const listener of listeners) {

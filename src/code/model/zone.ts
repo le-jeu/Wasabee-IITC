@@ -1,4 +1,9 @@
 export default class WasabeeZone {
+  id: number;
+  name: string;
+  color: string;
+  points: Array<zonePoint>;
+
   constructor(obj) {
     this.id = Number(obj.id);
     this.name = obj.name;
@@ -51,6 +56,10 @@ export default class WasabeeZone {
 }
 
 class zonePoint {
+  position: number;
+  lat: number;
+  lng: number;
+  
   constructor(obj) {
     this.position = Number(obj.position);
     this.lat = Number(obj.lat);

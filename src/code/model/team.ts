@@ -4,6 +4,17 @@ import { teamPromise } from "../server";
 import db from "../db";
 
 export default class WasabeeTeam {
+  fetched: number;
+  id: string;
+  name: string;
+  rc: string;
+  rk: string;
+  jlt: string;
+  agents: Array<WasabeeAgent>;
+
+  _a: Array<WasabeeAgent>;
+  cached: boolean;
+
   constructor(data) {
     if (typeof data == "string") {
       try {

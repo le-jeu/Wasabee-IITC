@@ -1,7 +1,19 @@
 import { generateId } from "../auxiliar";
 import { getSelectedOperation } from "../selectedOp";
+import WasabeeOp from "./operation";
+
 
 export default class WasabeeLink {
+  ID: string;
+  fromPortalId: string;
+  toPortalId: string;
+  description?: string;
+  assignedTo?: string;
+  throwOrderPos: number;
+  color: string;
+  completed: boolean;
+  zone: number;
+
   constructor(obj) {
     this.ID = obj.ID ? obj.ID : generateId();
     this.fromPortalId = obj.fromPortalId;
@@ -44,12 +56,16 @@ export default class WasabeeLink {
   }
 
   // for interface consistency, other types use order
-  get opOrder() {
+  get opOrder(): number {
     return this.throwOrderPos;
   }
 
-  set opOrder(o) {
-    this.throwOrderPos = Number.parseInt(o, 10);
+  set opOrder(o: number) {
+    this.throwOrderPos = o;
+  }
+
+  setOrder(o: number | string) {
+    this.throwOrderPos = (+o) || 0;
   }
 
   // make the interface match (kinda) what markers do
@@ -74,7 +90,7 @@ export default class WasabeeLink {
     return this.fromPortalId;
   }
 
-  getLatLngs(operation) {
+  getLatLngs(operation: WasabeeOp) {
     if (!operation) operation = getSelectedOperation();
 
     const returnArray = Array();
@@ -100,19 +116,19 @@ export default class WasabeeLink {
     return this.getLatLngs(getSelectedOperation());
   }
 
-  setColor(color, operation) {
+  setColor(color: string, operation: WasabeeOp) {
     this.color = color;
     if (this.color == operation.color) this.color = "main";
     operation.update();
   }
 
-  getColor(operation) {
+  getColor(operation: WasabeeOp) {
     let color = this.color;
     if (color == "main") color = operation.color;
     return color;
   }
 
-  length(operation) {
+  length(operation: WasabeeOp) {
     const latlngs = this.getLatLngs(operation);
     return L.latLng(latlngs[0]).distanceTo(latlngs[1]);
   }

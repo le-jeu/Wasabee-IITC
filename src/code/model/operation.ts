@@ -12,7 +12,49 @@ import db from "../db";
 // 0.20->0.21 blocker migration
 import WasabeeBlocker from "./blocker";
 
+export type KeyOnHand = {
+  portalId: string,
+  gid: string,
+  capsule: string,
+  onhand: number,
+}
+
+export type OpPermItem = {
+  role: "read" | "write" | "assignonly",
+  teamid: string,
+  zone:  number,
+}
+
 export default class WasabeeOp extends Evented {
+  ID: string;
+  name: string;
+  creator: string;
+  anchors: Array<string>;
+  links: Array<WasabeeLink>;
+  markers: Array<WasabeeMarker>;
+  color: string;
+  comment: string;
+  teamlist: Array<OpPermItem>;
+  fetched: string;
+  stored: number;
+  localchanged: boolean;
+  blockers: Array<WasabeeLink>;
+  keysonhand: Array<KeyOnHand>;
+  zones: Array<WasabeeZone>;
+
+  referencetime: string;
+  lasteditid: string;
+  remoteChanged: boolean;
+  server: string;
+  fetchedOp: string;
+  background: boolean;
+
+  _idToOpportals: Map<string, WasabeePortal>;
+  _coordsToOpportals: Map<string, WasabeePortal>;
+
+  _dirtyCoordsTable: boolean = false;
+  _batchmode: boolean = false;
+
   constructor(obj) {
     super();
     if (typeof obj == "string") {
@@ -155,7 +197,7 @@ export default class WasabeeOp extends Evented {
   }
 
   // build object to serialize, shallow copy, local-only values excluded
-  toJSON() {
+  toJSON(): any {
     return {
       ID: this.ID,
       name: this.name,
@@ -481,9 +523,6 @@ export default class WasabeeOp extends Evented {
   }
 
   cleanCaches() {
-    for (const l of this.links) {
-      delete l._crosslinksGL;
-    }
   }
 
   cleanAnchorList() {
@@ -635,7 +674,7 @@ export default class WasabeeOp extends Evented {
   }
 
   // options: {description,order,color,replace}
-  addLink(fromPortal, toPortal, options = {}) {
+  addLink(fromPortal: WasabeePortal, toPortal: WasabeePortal, options: { description?:string, order?: number, color?: string, replace?: boolean } = {}) {
     console.assert(fromPortal && toPortal, "missing portal for link");
     if (fromPortal.id === toPortal.id) {
       console.debug(
@@ -656,8 +695,7 @@ export default class WasabeeOp extends Evented {
             {
               fromPortalId: fromPortal.id,
               toPortalId: toPortal.id,
-            },
-            this
+            }
           );
     if (options.description) link.description = options.description;
     if (options.order) link.opOrder = options.order;
@@ -679,7 +717,7 @@ export default class WasabeeOp extends Evented {
     return link;
   }
 
-  containsAnchor(portalId) {
+  containsAnchor(portalId: string) {
     if (this.anchors.length == 0) return false;
     for (const a of this.anchors) {
       if (a == portalId) {
@@ -689,7 +727,7 @@ export default class WasabeeOp extends Evented {
     return false;
   }
 
-  addAnchor(portal) {
+  addAnchor(portal: WasabeePortal) {
     // doing this ourselves saves a trip to update();
     this._addPortal(portal);
     if (!this.containsAnchor(portal.id)) {
@@ -703,7 +741,7 @@ export default class WasabeeOp extends Evented {
   }
 
   // silently swap two anchors
-  _swapPortal(originalPortal, newPortal) {
+  _swapPortal(originalPortal: WasabeePortal, newPortal: WasabeePortal) {
     this.anchors = this.anchors.filter(function (listAnchor) {
       return listAnchor !== originalPortal.id;
     });
@@ -711,11 +749,6 @@ export default class WasabeeOp extends Evented {
 
     const linksToRemove = [];
     for (const l of this.links) {
-      // purge any crosslink check cache
-      if (l._crosslinksGL) {
-        delete l._crosslinksGL;
-      }
-
       if (l.fromPortalId == originalPortal.id) {
         if (l.toPortalId === newPortal.id) {
           console.debug(
@@ -752,14 +785,14 @@ export default class WasabeeOp extends Evented {
     );
   }
 
-  swapPortal(originalPortal, newPortal) {
+  swapPortal(originalPortal: WasabeePortal, newPortal: WasabeePortal) {
     this._addPortal(newPortal);
     this._swapPortal(originalPortal, newPortal);
     this.update(true);
     this.updateBlockers();
   }
 
-  addMarker(markerType, portal, options) {
+  addMarker(markerType: string, portal:WasabeePortal, options) {
     if (!portal) return false;
     if (this.containsMarker(portal, markerType)) return false;
     // save a trip to update()
@@ -854,7 +887,7 @@ export default class WasabeeOp extends Evented {
     const tmpLinks = new Array();
     if (!links || links.length == 0) return tmpLinks;
     for (const l of links) {
-      tmpLinks.push(new WasabeeLink(l, this));
+      tmpLinks.push(new WasabeeLink(l));
     }
     return tmpLinks;
   }
@@ -1007,10 +1040,10 @@ export default class WasabeeOp extends Evented {
   get nextOrder() {
     let o = 0;
     for (const l of this.links) {
-      o = Math.max(o, l.opOrder);
+      o = Math.max(o, l.opOrder as number);
     }
     for (const m of this.markers) {
-      o = Math.max(o, m.opOrder);
+      o = Math.max(o, m.opOrder as number);
     }
     return ++o;
   }
@@ -1112,7 +1145,7 @@ export default class WasabeeOp extends Evented {
   }
 
   addZone() {
-    const ids = new Set();
+    const ids = new Set<number>();
     for (const z of this.zones) {
       ids.add(z.id);
     }
@@ -1122,7 +1155,7 @@ export default class WasabeeOp extends Evented {
     return newid;
   }
 
-  addZonePoint(zoneID, latlng) {
+  addZonePoint(zoneID: number, latlng: L.LatLng) {
     for (const z of this.zones) {
       if (z.id == zoneID) {
         z.points.push({
@@ -1136,11 +1169,14 @@ export default class WasabeeOp extends Evented {
     this.update(true);
   }
 
-  changes(origin) {
+  changes(origin?: WasabeeOp) {
     const changes = {
       addition: new Array(),
       edition: new Array(),
       deletion: new Array(),
+      name: null,
+      color: null,
+      comment: null,
     };
     // empty op if old OP (or local OP)
     const oldOp = new WasabeeOp(origin ? origin : this.fetchedOp || {});
