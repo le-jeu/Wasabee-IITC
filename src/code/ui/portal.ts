@@ -5,8 +5,10 @@ import AssignDialog from "../dialogs/assignDialog";
 import SendTargetDialog from "../dialogs/sendTargetDialog";
 import SetCommentDialog from "../dialogs/setCommentDialog";
 import wX from "../wX";
+import { IITC } from "../../types/iitc";
 
-function fromIITC(p) {
+
+function fromIITC(p: IITC.Portal) {
   // we have all the details
   if (p && p.options && p.options.data && p.options.guid) {
     const data = p.options.data;
@@ -95,31 +97,43 @@ function getSelected() {
   return window.selectedPortal ? get(window.selectedPortal) : null;
 }
 
-// common part for marker and anchors
-const WLPortal = L.Marker.extend({
-  type: "portal",
+interface WLPortalOptions extends L.MarkerOptions {
+  portalId: string,
+  title?: string,
+  id: string,
+}
 
-  initialize: function (options) {
+// common part for marker and anchors
+class WLPortal extends L.Marker {
+  type: string;
+
+  options: WLPortalOptions;
+
+  constructor (options: WLPortalOptions) {
     const operation = getSelectedOperation();
     const portal = operation.getPortal(options.portalId);
     options.title = portal.name;
-    L.Marker.prototype.initialize.call(this, portal.latLng, options);
-    this.bindPopup((layer) => layer._popupContent(), {
+    super(portal.latLng, options);
+    this.bindPopup((layer: WLPortal) => layer._popupContent(), {
       className: "wasabee-popup",
       closeButton: false,
     });
 
-    this.off("click", this._openPopup);
-    window.registerMarkerForOMS(this);
-    this.on("spiderfiedclick", this._openPopup);
-  },
+    this.type = "portal";
 
-  _popupContent: function () {
+    // @ts-ignore 
+    this.off("click", this._openPopup); 
+    window.registerMarkerForOMS(this);
+    // @ts-ignore 
+    this.on("spiderfiedclick", this._openPopup);
+  }
+
+  _popupContent () {
     const div = L.DomUtil.create("div", `wasabee-${this.type}-popup`);
     return div;
-  },
+  }
 
-  _popupPortalComments: function (container, portal, canWrite) {
+  _popupPortalComments (container, portal, canWrite) {
     const portalComment = L.DomUtil.create(
       "div",
       "wasabee-portal-comment",
@@ -144,9 +158,9 @@ const WLPortal = L.Marker.extend({
         L.DomEvent.on(phLink, "click", this._setPortalComment, this);
       }
     }
-  },
+  }
 
-  _setPortalComment: function (ev) {
+  _setPortalComment (ev) {
     L.DomEvent.stop(ev);
     const operation = getSelectedOperation();
     const portal = operation.getPortal(this.options.portalId);
@@ -156,9 +170,9 @@ const WLPortal = L.Marker.extend({
     });
     scd.enable();
     this.closePopup();
-  },
+  }
 
-  _assignButton: function (container, text, target) {
+  _assignButton (container, text, target) {
     const assignButton = L.DomUtil.create("button", null, container);
     assignButton.textContent = text;
     L.DomEvent.on(assignButton, "click", (ev) => {
@@ -167,19 +181,21 @@ const WLPortal = L.Marker.extend({
       ad.enable();
       this.closePopup();
     });
-  },
+  }
 
-  _deleteButton: function (container, text) {
+  _deleteAction() {}
+
+  _deleteButton (container, text) {
     const deleteButton = L.DomUtil.create("button", null, container);
     deleteButton.textContent = text;
     L.DomEvent.on(deleteButton, "click", (ev) => {
       L.DomEvent.stop(ev);
-      if (this._deleteAction) this._deleteAction();
+      this._deleteAction();
       this.closePopup();
     });
-  },
+  }
 
-  _sendTargetButton: function (container, text, target) {
+  _sendTargetButton (container, text, target) {
     const sendButton = L.DomUtil.create("button", null, container);
     sendButton.textContent = text;
     L.DomEvent.on(sendButton, "click", (ev) => {
@@ -188,9 +204,9 @@ const WLPortal = L.Marker.extend({
       std.enable();
       this.closePopup();
     });
-  },
+  }
 
-  _mapButton: function (container, text) {
+  _mapButton (container, text) {
     const gmapButton = L.DomUtil.create("button", null, container);
     gmapButton.textContent = text;
     L.DomEvent.on(gmapButton, "click", (ev) => {
@@ -219,8 +235,8 @@ const WLPortal = L.Marker.extend({
         );
       }
     });
-  },
-});
+  }
+}
 
 export default {
   fromIITC,

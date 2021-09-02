@@ -5,10 +5,14 @@ import { addToColorList } from "../skin";
 import wX from "../wX";
 
 import PortalUI from "./portal";
+import WasabeeMarker from "../model/marker";
+import WasabeeOp from "../model/operation";
+import WasabeeLink from "../model/link";
+
 
 // returns a DOM object appropriate for display
 // do we still need the operation here?
-function displayFormat(link, operation, smallScreen = false) {
+function displayFormat(link: WasabeeLink, operation: WasabeeOp, smallScreen = false) {
   const d = L.DomUtil.create("div", null);
   d.appendChild(
     PortalUI.displayFormat(operation.getPortal(link.fromPortalId), smallScreen)
@@ -26,8 +30,8 @@ function displayFormat(link, operation, smallScreen = false) {
   });
 
   L.DomEvent.on(picker, "change", (ev) => {
-    link.setColor(ev.target.value, operation);
-    addToColorList(ev.target.value);
+    link.setColor((ev.target as HTMLInputElement).value, operation);
+    addToColorList((ev.target as HTMLInputElement).value);
   });
 
   d.appendChild(
@@ -36,7 +40,7 @@ function displayFormat(link, operation, smallScreen = false) {
   return d;
 }
 
-function minLevel(link, operation) {
+function minLevel(link: WasabeeLink, operation: WasabeeOp) {
   const b = link.length(operation);
   let s = wX("UNKNOWN");
   const a = L.DomUtil.create("span", null);
@@ -77,8 +81,10 @@ function minLevel(link, operation) {
   return a;
 }
 
-const WLLink = L.GeodesicPolyline.extend({
-  initialize: function (link, operation) {
+// @ts-ignore 
+class WLLink extends L.GeodesicPolyline {
+  _wlink: any;
+  constructor (link: WasabeeLink, operation: WasabeeOp) {
     const latLngs = link.getLatLngs(operation);
     let color = link.getColor(operation);
     if (color == "main")
@@ -93,17 +99,18 @@ const WLLink = L.GeodesicPolyline.extend({
     );
     if (link.assignedTo) options.dashArray = options.assignedDashArray;
 
-    L.GeodesicPolyline.prototype.initialize.call(this, latLngs, options);
+    super(latLngs, options);
 
     this._wlink = link;
 
-    this.bindPopup((layer) => layer._getPopup(), {
+    // @ts-ignore 
+    this.bindPopup((layer: WLLink) => layer._getPopup(), {
       className: "wasabee-popup",
       closeButton: false,
     });
-  },
+  }
 
-  _getPopup: function () {
+  _getPopup () {
     const operation = getSelectedOperation();
     const link = this._wlink;
     const div = L.DomUtil.create("div", "wasabee-link-popup");
@@ -138,8 +145,8 @@ const WLLink = L.GeodesicPolyline.extend({
       });
     }
     return div;
-  },
-});
+  }
+}
 
 export default {
   displayFormat,

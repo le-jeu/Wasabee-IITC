@@ -1,18 +1,15 @@
-const zoneShape = {
-  stroke: false,
-  opacity: 0.7,
-  fill: true,
-  interactive: false,
-};
+import WasabeeZone from "../model/zone";
 
-const WLZone = L.LayerGroup.extend({
-  initialize: function (zone) {
+
+class WLZone extends L.LayerGroup {
+  constructor (zone: WasabeeZone) {
     zone.points.sort((a, b) => {
       return a.position - b.position;
     });
     let layer;
     if (zone.points.length == 1)
       layer = L.marker(zone.points[0], {
+        // @ts-ignore 
         icon: L.divIcon.coloredSvg(zone.color),
       });
     else if (zone.points.length == 2)
@@ -20,11 +17,13 @@ const WLZone = L.LayerGroup.extend({
     else
       layer = L.polygon(zone.points, {
         color: zone.color,
-        shapeOptions: zoneShape,
+        opacity: 0.7,
+        fill: true,
+        interactive: false,
       });
-    L.LayerGroup.prototype.initialize.call(this, [layer]);
-  },
-});
+    super([layer]);
+  }
+}
 
 export default {
   WLZone,

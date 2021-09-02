@@ -7,7 +7,7 @@ import wX from "../wX";
 
 import WasabeeAgent from "../model/agent";
 
-async function formatDisplay(agent, teamID = 0) {
+async function formatDisplay(agent, teamID: number | string = 0) {
   const display = L.DomUtil.create("a", "wasabee-agent-label");
   if (agent.Vverified || agent.rocks) {
     L.DomUtil.addClass(display, "enl");
@@ -30,7 +30,7 @@ function timeSinceformat(agent) {
   if (Number.isNaN(date)) return `(${agent.date} UTC)`; // FireFox Date.parse no good
   if (date == 0) return "";
 
-  const seconds = Math.floor((new Date() - date) / 1000);
+  const seconds = Math.floor((Date.now() - date) / 1000);
   if (seconds < 0) return "";
   let interval = Math.floor(seconds / 31536000 / 2592000 / 86400);
 
@@ -51,14 +51,14 @@ function icon(agent, z = 7) {
   return bigIcon(agent);
 }
 
-function iconSize(z = 7) {
+function iconSize(z = 7) :[number, number] {
   if (z < 6) return [30, 30];
   if (z >= 6 && z < 9) return [36, 47];
   if (z >= 9 && z < 15) return [40, 52];
   return [46, 60];
 }
 
-function iconAnchor(z = 7) {
+function iconAnchor(z = 7) : [number, number] {
   if (z < 6) return [15, 30];
   if (z >= 6 && z < 9) return [18, 47];
   if (z >= 9 && z < 15) return [20, 52];
@@ -115,31 +115,39 @@ function bigIcon(agent) {
   return icon;
 }
 
-const WLAgent = L.Marker.extend({
-  initialize: function (agent) {
+interface WLAgentOptions extends L.MarkerOptions {
+  agent: WasabeeAgent,
+  id: string,
+  zoom: number,
+}
+
+class WLAgent extends L.Marker {
+  options: WLAgentOptions;
+
+  constructor (agent: WasabeeAgent) {
     const zoom = window.map.getZoom();
-    L.Marker.prototype.initialize.call(this, agent.latLng, {
+    super(agent.latLng, {
       title: agent.name,
       icon: L.divIcon({
         className: "wasabee-agent-icon",
         iconSize: iconSize(zoom),
         iconAnchor: iconAnchor(zoom),
         popupAnchor: L.point(0, -70),
-        html: icon(agent, zoom),
+        html: icon(agent, zoom) as any,
       }),
+    });
+    L.setOptions(this, {
       id: agent.id,
       agent: agent,
-      zoom: zoom,
-    });
-
+      zoom: zoom})
     window.registerMarkerForOMS(this);
-    this.bindPopup((layer) => layer._getPopup(), {
+    this.bindPopup((layer: WLAgent) => layer._getPopup(), {
       className: "wasabee-popup",
       closeButton: false,
     });
-  },
+  }
 
-  update: function () {
+  update () {
     const zoom = window.map.getZoom();
     if (this.options.zoom != zoom) {
       this.options.zoom = zoom;
@@ -149,13 +157,14 @@ const WLAgent = L.Marker.extend({
           iconSize: iconSize(zoom),
           iconAnchor: iconAnchor(zoom),
           popupAnchor: L.point(0, -70),
-          html: icon(this.options.agent, zoom),
+          html: icon(this.options.agent, zoom) as any
         })
       );
     } else L.Marker.prototype.update.call(this);
-  },
+    return this;
+  }
 
-  _getPopup: function () {
+  _getPopup () {
     const agent = this.options.agent;
     const content = L.DomUtil.create("div", "wasabee-agent-popup");
     const title = L.DomUtil.create("div", "desc", content);
@@ -236,10 +245,11 @@ const WLAgent = L.Marker.extend({
     }
 
     return content;
-  },
-});
+  }
+}
 
 export default {
   formatDisplay,
+  timeSinceformat,
   WLAgent,
 };

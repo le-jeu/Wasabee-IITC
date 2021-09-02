@@ -1,14 +1,13 @@
 import LinkListDialog from "../dialogs/linkListDialog";
+import WasabeeOp from "../model/operation";
 import { getSelectedOperation } from "../selectedOp";
 import { swapPortal, deletePortal } from "../uiCommands";
 import wX from "../wX";
 
 import PortalUI from "./portal";
 
-const WLAnchor = PortalUI.WLPortal.extend({
-  type: "anchor",
-
-  initialize: function (portalId, operation) {
+class WLAnchor extends PortalUI.WLPortal {
+  constructor (portalId: string, operation: WasabeeOp) {
     let color = operation.color;
     if (color == "main")
       color = window.plugin.wasabee.skin.defaultOperationColor;
@@ -23,14 +22,16 @@ const WLAnchor = PortalUI.WLPortal.extend({
         { color: color }
       ),
     });
-    PortalUI.WLPortal.prototype.initialize.call(this, {
+    super({
       portalId: portalId,
       id: portalId,
       icon: icon,
     });
-  },
 
-  _popupContent: function () {
+    this.type = "anchor";
+  }
+
+  _popupContent () {
     const operation = getSelectedOperation();
     const canWrite = operation.canWrite();
     const portal = operation.getPortal(this.options.portalId);
@@ -62,9 +63,9 @@ const WLAnchor = PortalUI.WLPortal.extend({
       this._sendTargetButton(buttonSet, wX("SEND TARGET"), portal);
 
     return content;
-  },
+  }
 
-  _linksButton: function (container) {
+  _linksButton (container) {
     const operation = getSelectedOperation();
     const portal = operation.getPortal(this.options.portalId);
     const linksButton = L.DomUtil.create("button", null, container);
@@ -75,9 +76,9 @@ const WLAnchor = PortalUI.WLPortal.extend({
       lld.enable();
       this.closePopup();
     });
-  },
+  }
 
-  _swapButton: function (container) {
+  _swapButton (container) {
     const operation = getSelectedOperation();
     const portal = operation.getPortal(this.options.portalId);
     const swapButton = L.DomUtil.create("button", null, container);
@@ -87,14 +88,14 @@ const WLAnchor = PortalUI.WLPortal.extend({
       swapPortal(operation, portal);
       this.closePopup();
     });
-  },
+  }
 
-  _deleteAction: function () {
+  _deleteAction () {
     const operation = getSelectedOperation();
     const portal = operation.getPortal(this.options.portalId);
     deletePortal(operation, portal);
-  },
-});
+  }
+}
 
 export default {
   WLAnchor,

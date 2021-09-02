@@ -10,15 +10,16 @@ import AgentUI from "./agent";
 import PortalUI from "./portal";
 
 import wX from "../wX";
+import WasabeeMarker from "../model/marker";
 
-const WLMarker = PortalUI.WLPortal.extend({
-  type: "marker",
 
-  initialize: function (marker) {
-    PortalUI.WLPortal.prototype.initialize.call(this, {
+class WLMarker extends PortalUI.WLPortal {
+  state: string;
+
+  constructor (marker: WasabeeMarker) {
+    super({
       portalId: marker.portalId,
       id: marker.ID,
-      state: marker.state,
       icon: L.divIcon({
         className: `wasabee-marker-icon ${marker.type} wasabee-status-${marker.state}`,
         shadowUrl: null,
@@ -27,17 +28,19 @@ const WLMarker = PortalUI.WLPortal.extend({
         popupAnchor: L.point(-1, -48),
       }),
     });
-  },
+    this.state = marker.state,
+    this.type = "marker";
+  }
 
-  setState: function (state) {
-    if (state != this.options.state) {
-      L.DomUtil.removeClass(this._icon, `wasabee-status-${this.options.state}`);
-      L.DomUtil.addClass(this._icon, `wasabee-status-${state}`);
-      this.options.state = state;
+  setState (state: string) {
+    if (state != this.state) {
+      L.DomUtil.removeClass(this.getElement(), `wasabee-status-${this.state}`);
+      L.DomUtil.addClass(this.getElement(), `wasabee-status-${state}`);
+      this.state = state;
     }
-  },
+  }
 
-  _popupContent: function () {
+  _popupContent () {
     const operation = getSelectedOperation();
     const marker = operation.getMarker(this.options.id);
     const portal = operation.getPortal(marker.portalId);
@@ -61,7 +64,6 @@ const WLMarker = PortalUI.WLPortal.extend({
     kind.textContent = wX(marker.type);
     desc.appendChild(PortalUI.displayFormat(portal));
     if (canWrite) {
-      kind.href = "#";
       L.DomEvent.on(kind, "click", this._setMarkerType, this);
     }
     this._popupMarkerComment(desc, marker, canWrite);
@@ -83,9 +85,9 @@ const WLMarker = PortalUI.WLPortal.extend({
     this._mapButton(buttonSet, wX("ANCHOR_GMAP"));
 
     return content;
-  },
+  }
 
-  _popupMarkerComment: function (container, marker, canWrite) {
+  _popupMarkerComment (container, marker, canWrite) {
     if (marker.comment) {
       const comment = L.DomUtil.create(
         "div",
@@ -95,9 +97,9 @@ const WLMarker = PortalUI.WLPortal.extend({
       comment.textContent = marker.comment;
       if (canWrite) L.DomEvent.on(comment, "click", this._setComment, this);
     }
-  },
+  }
 
-  _popupAssignState: async function (container, marker) {
+  async _popupAssignState (container, marker) {
     const assignment = L.DomUtil.create(
       "div",
       "wasabee-popup-assignment",
@@ -123,9 +125,9 @@ const WLMarker = PortalUI.WLPortal.extend({
         console.error(e);
       }
     }
-  },
+  }
 
-  _stateButton: function (container, marker) {
+  _stateButton (container, marker) {
     const operation = getSelectedOperation();
     const stateButton = L.DomUtil.create("button", null, container);
     stateButton.textContent = wX("MARKER STATE");
@@ -135,16 +137,16 @@ const WLMarker = PortalUI.WLPortal.extend({
       sd.enable();
       this.closePopup();
     });
-  },
+  }
 
-  _deleteAction: function () {
+  _deleteAction () {
     const operation = getSelectedOperation();
     const portal = operation.getPortal(this.options.portalId);
     const marker = operation.getMarker(this.options.id);
     deleteMarker(operation, marker, portal);
-  },
+  }
 
-  _setComment: function (ev) {
+  _setComment (ev) {
     L.DomEvent.stop(ev);
     const operation = getSelectedOperation();
     const marker = operation.getMarker(this.options.id);
@@ -154,17 +156,17 @@ const WLMarker = PortalUI.WLPortal.extend({
     });
     scd.enable();
     this.closePopup();
-  },
+  }
 
-  _setMarkerType: function (ev) {
+  _setMarkerType (ev) {
     L.DomEvent.stop(ev);
     const operation = getSelectedOperation();
     const marker = operation.getMarker(this.options.id);
     const ch = new MarkerChangeDialog({ marker: marker });
     ch.enable();
     this.closePopup();
-  },
-});
+  }
+}
 
 export default {
   WLMarker,
