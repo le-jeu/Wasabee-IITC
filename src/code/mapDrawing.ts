@@ -22,7 +22,7 @@ export function drawMap() {
 }
 
 // updates all existing markers, adding any that need to be added, removing any that need to be removed
-function updateMarkers(op) {
+function updateMarkers(op: WasabeeOp) {
   if (window.isLayerGroupDisplayed("Wasabee Draw Markers") === false) return; // yes, === false, undefined == true
   if (!op.markers || op.markers.length == 0) {
     Wasabee.markerLayerGroup.clearLayers();
@@ -43,7 +43,7 @@ function updateMarkers(op) {
       ll.setState(m.state);
       layerMap.delete(m.ID);
     } else {
-      const lMarker = new MarkerUI.WLMarker(m, op);
+      const lMarker = new MarkerUI.WLMarker(m);
       lMarker.addTo(Wasabee.markerLayerGroup);
     }
   }
@@ -56,7 +56,7 @@ function updateMarkers(op) {
 }
 
 // resetting is consistently 1ms faster than trying to update
-function resetLinks(operation) {
+function resetLinks(operation: WasabeeOp) {
   if (window.isLayerGroupDisplayed("Wasabee Draw Links") === false) return; // yes, === false, undefined == true
   Wasabee.linkLayerGroup.clearLayers();
 
@@ -64,11 +64,12 @@ function resetLinks(operation) {
 
   for (const l of operation.links) {
     const link = new LinkUI.WLLink(l, operation);
+    // @ts-ignore
     link.addTo(Wasabee.linkLayerGroup);
   }
 }
 
-export async function drawBackgroundOps(opIDs) {
+export async function drawBackgroundOps(opIDs?: string[]) {
   if (window.isLayerGroupDisplayed("Wasabee Background Ops") === false) return;
   Wasabee.backgroundOpsGroup.clearLayers();
 
@@ -82,7 +83,7 @@ export async function drawBackgroundOps(opIDs) {
   }
 }
 
-export function drawBackgroundOp(operation, layerGroup, style) {
+export function drawBackgroundOp(operation, layerGroup?: L.LayerGroup, style?: L.PathOptions) {
   if (!operation) return;
   if (!operation.links || operation.links.length == 0) return;
 
@@ -93,6 +94,7 @@ export function drawBackgroundOp(operation, layerGroup, style) {
     const latLngs = link.getLatLngs(operation);
     if (!latLngs) continue;
 
+    // @ts-ignore
     const newlink = new L.GeodesicPolyline(latLngs, style);
     newlink.addTo(layerGroup);
   }
@@ -142,7 +144,7 @@ function agentLayerMap() {
 }
 
 // use alreadyDone to reduce processing when using this in a loop, otherwise leave it unset
-export async function drawSingleTeam(teamID, layerMap, alreadyDone) {
+export async function drawSingleTeam(teamID: string, layerMap?: Map<string, number>, alreadyDone?: string[]) {
   const done = new Array();
   if (window.isLayerGroupDisplayed("Wasabee Agents") === false) return done; // yes, === false, undefined == true
   if (alreadyDone === undefined) alreadyDone = new Array();

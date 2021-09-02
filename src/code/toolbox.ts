@@ -4,6 +4,7 @@ import OnlineAgentList from "./dialogs/onlineAgentList";
 import wX from "./wX";
 import { locationPromise } from "./server";
 
+
 /* This function adds the Wasabee options to the IITC toolbox */
 export function setupToolbox() {
   const toolbox = document.getElementById("toolbox");

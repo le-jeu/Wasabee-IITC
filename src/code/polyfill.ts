@@ -2,18 +2,18 @@
 export default function polyfill() {
   // create Promise.allSettled if missing
   if (!Promise.allSettled) {
-    Promise.allSettled = function (promises) {
+    Promise.allSettled = function (promises: Array<Promise<any>>) : Promise<Array<{status: 'fulfilled' | 'rejected', value?: any, reason?: any}>> {
       let mappedPromises = promises.map((p) => {
         return p
           .then((value) => {
             return {
-              status: "fulfilled",
+              status: "fulfilled" as 'fulfilled',
               value,
             };
           })
           .catch((reason) => {
             return {
-              status: "rejected",
+              status: "rejected" as 'rejected',
               reason,
             };
           });

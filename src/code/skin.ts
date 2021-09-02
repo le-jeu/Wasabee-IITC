@@ -1,5 +1,6 @@
 const Wasabee = window.plugin.wasabee;
 
+
 // the skins probably aren't loaded by the time W's init is called
 export function initSkin() {
   Wasabee.skin = {};
@@ -117,7 +118,7 @@ function initAnchorIcon() {
     const tmp = L.DomUtil.create("div");
     tmp.innerHTML = iconHTML;
 
-    const icon = tmp.firstChild;
+    const icon = tmp.firstChild as HTMLElement;
     icon.id = "wasabee-anchor-svg";
     document.body.appendChild(icon);
   }
@@ -136,12 +137,12 @@ function initOpsColor() {
 }
 
 export function addToColorList(color) {
-  const datalist = document.getElementById("wasabee-colors-datalist");
+  const datalist = document.getElementById("wasabee-colors-datalist") as HTMLDataListElement;
   // fail safe
   if (!datalist) return;
 
   for (const c of datalist.children) {
-    if (c.value == color) {
+    if ((c as HTMLOptionElement).value == color) {
       datalist.insertBefore(c, datalist.firstChild);
       return;
     }

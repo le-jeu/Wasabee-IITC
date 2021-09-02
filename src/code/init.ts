@@ -14,7 +14,7 @@ import { initFirebase, postToFirebase } from "./firebaseSupport";
 import { initWasabeeD } from "./wd";
 import { listenForPortalDetails, sendLocation } from "./uiCommands";
 import { initSkin, changeSkin } from "./skin";
-import { WPane } from "./leafletClasses";
+import { WDialog, WPane } from "./leafletClasses";
 import OperationChecklist from "./dialogs/checklist";
 import WasabeeMe from "./model/me";
 import WasabeeOp from "./model/operation";
@@ -33,7 +33,9 @@ window.plugin.wasabee.init = async () => {
   Object.freeze(Wasabee.static);
 
   if (
+    // @ts-ignore
     window.iitcBuildDate == undefined ||
+    // @ts-ignore
     window.iitcBuildDate < "2020-01-18-170317"
   ) {
     alert(
@@ -46,6 +48,7 @@ window.plugin.wasabee.init = async () => {
     Wasabee.idb = await db;
   } catch (e) {
     alert("Wasabee: unable to access the storage: " + e.toString());
+    // @ts-ignore
     plugin_info.error = e; //eslint-disable-line
     return;
   }
@@ -218,8 +221,9 @@ window.plugin.wasabee.init = async () => {
     window.map.fire("wasabee:defensivekeys");
   }
 
-  window.map.on("wdialog", (dialog) => {
-    postToFirebase({ id: "analytics", action: dialog.constructor.TYPE });
+  // @ts-ignore
+  window.map.on("wdialog", (dialog: WDialog) => {
+    postToFirebase({ id: "analytics", action: dialog.constructor.name });
   });
 };
 

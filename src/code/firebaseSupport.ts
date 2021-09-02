@@ -18,6 +18,7 @@ import WasabeePortal from "./model/portal";
 
 import PortalUI from "./ui/portal";
 
+
 // TODO: use a dedicated message channel: https://developer.mozilla.org/en-US/docs/Web/API/Channel_Messaging_API/Using_channel_messaging
 
 const frameID = "wasabeeFirebaseFrame";
@@ -26,8 +27,8 @@ export function initFirebase() {
   const server = GetWasabeeServer();
 
   const iframe = L.DomUtil.create("iframe");
-  iframe.width = 0;
-  iframe.height = 0;
+  iframe.width = "0";
+  iframe.height = "0";
   iframe.src = server + "/static/firebase/index.html";
   iframe.id = frameID;
 

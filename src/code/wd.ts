@@ -6,6 +6,17 @@ import wX from "./wX";
 
 import AgentUI from "./ui/agent";
 
+
+export type WDKey = {
+  Name: string,
+  PortalID: string,
+  GID: string,
+  Lat: string,
+  Lng: string,
+  Count: number,
+  CapID: string,
+}
+
 // setup function
 export function initWasabeeD() {
   window.plugin.wasabee.defensiveLayers = new L.LayerGroup();
@@ -32,16 +43,16 @@ export function initWasabeeD() {
   });
 }
 
-export function getAllWasabeeDkeys() {
+export function getAllWasabeeDkeys() : Promise<WDKey[]> {
   return window.plugin.wasabee.idb.getAll("defensivekeys");
 }
 
-export async function getAgentWasabeeDkeys(gid) {
+export async function getAgentWasabeeDkeys(gid: string) {
   const dks = await getAllWasabeeDkeys();
   return dks.filter((dk) => dk.GID == gid);
 }
 
-export function getAllPortalWasabeeDkeys(portalid) {
+export function getAllPortalWasabeeDkeys(portalid: string) : Promise<WDKey[]> {
   return window.plugin.wasabee.idb.getAllFromIndex(
     "defensivekeys",
     "PortalID",
@@ -49,7 +60,7 @@ export function getAllPortalWasabeeDkeys(portalid) {
   );
 }
 
-export function getAgentPortalWasabeeDkeys(gid, portalid) {
+export function getAgentPortalWasabeeDkeys(gid: string, portalid: string) : Promise<WDKey> {
   return window.plugin.wasabee.idb.get("defensivekeys", [gid, portalid]);
 }
 
@@ -95,7 +106,7 @@ async function drawMarkers() {
 }
 
 // remove and re-add each marker
-function drawMarker(dk) {
+function drawMarker(dk: WDKey) {
   if (
     window.plugin.wasabee.defensiveLayers[dk.PortalID] &&
     window.plugin.wasabee.defensiveLayers[dk.PortalID]._leaflet_id
@@ -104,7 +115,7 @@ function drawMarker(dk) {
       window.plugin.wasabee.defensiveLayers[dk.PortalID]
     );
 
-  const marker = L.marker([dk.Lat, dk.Lng], {
+  const marker = L.marker([+dk.Lat, +dk.Lng], {
     title: dk.Name,
     icon: L.divIcon({
       className: "wasabee-defense-icon",
@@ -129,8 +140,8 @@ function drawMarker(dk) {
       try {
         const content = await getMarkerPopup(dk.PortalID);
         marker.setPopupContent(content);
-        if (marker._popup._wrapper)
-          marker._popup._wrapper.classList.add("wasabee-popup");
+        if (marker.getPopup().getElement().firstElementChild)
+          marker.getPopup().getElement().firstElementChild.classList.add("wasabee-popup");
         marker.update();
       } catch (e) {
         console.error("getting wd marker popup: ", e);
@@ -144,7 +155,7 @@ function drawMarker(dk) {
 }
 
 // draw the popup, display the individual agents and their counts
-async function getMarkerPopup(PortalID) {
+async function getMarkerPopup(PortalID: string) {
   const container = L.DomUtil.create("div", "wasabee-wd-popup"); // leaflet-draw-tooltip would be cool
   const ul = L.DomUtil.create("ul", null, container);
 

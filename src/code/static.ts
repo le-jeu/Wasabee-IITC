@@ -1,4 +1,4 @@
-const statics = {
+const statics : any = {
   CSS: {
     main: require("./css/wasabee.css"),
     autodraws: require("./css/autodraws.css"),

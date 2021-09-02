@@ -5,17 +5,18 @@ import { getSelectedOperation } from "./selectedOp";
 
 import PortalUI from "./ui/portal";
 
+
 // from iitc rework : https://github.com/IITC-CE/ingress-intel-total-conversion/pull/333
 const d2r = Math.PI / 180;
 
-function toCartesian(lat, lng) {
+function toCartesian(lat: number, lng: number) : [number,number,number] {
   lat *= d2r;
   lng *= d2r;
   var o = Math.cos(lat);
   return [o * Math.cos(lng), o * Math.sin(lng), Math.sin(lat)];
 }
 
-function cross(t, n) {
+function cross(t:[number,number,number], n:[number,number,number]) : [number,number,number] {
   return [
     t[1] * n[2] - t[2] * n[1],
     t[2] * n[0] - t[0] * n[2],
@@ -23,17 +24,21 @@ function cross(t, n) {
   ];
 }
 
-function dot(t, n) {
+function dot(t:[number,number,number], n:[number,number,number]) {
   return t[0] * n[0] + t[1] * n[1] + t[2] * n[2];
 }
 
-function equals(a, b) {
+function equals(a:L.LatLng, b:L.LatLng) {
   return a.lat === b.lat && a.lng === b.lng;
 }
 
 // take L.LatLng
 // note: cache cos/sin calls in the object, in order to be efficient, try using same LatLng objects across calls, like using latLng from WasabeePortal attached to an op
-export function greatCircleArcIntersectByLatLngs(a0, a1, b0, b1) {
+interface LLC extends L.LatLng {
+  _cartesian?: [number, number, number],
+}
+
+export function greatCircleArcIntersectByLatLngs(a0:LLC, a1:LLC, b0:LLC, b1:LLC) {
   // 0) quick checks
   // zero length line
   if (equals(a0, a1)) return false;
@@ -159,6 +164,7 @@ function testPolyLine(wasabeeLink, realLink, operation) {
 
 function showCrossLink(link, operation) {
   // this should be in static.js or skin
+  // @ts-ignore
   const blocked = L.geodesicPolyline(link.getLatLngs(operation), {
     color: "#d22",
     opacity: 0.7,
@@ -205,6 +211,7 @@ function testSelfBlock(incoming, operation) {
   for (const against of operation.links) {
     if (incoming.ID == against.ID) continue;
     if (greatCircleArcIntersect(against, incoming)) {
+      // @ts-ignore
       const blocked = L.geodesicPolyline(
         against.getLatLngs(operation),
         window.plugin.wasabee.skin.selfBlockStyle
@@ -295,7 +302,15 @@ export function initCrossLinks() {
 }
 
 export class GeodesicLine {
-  constructor(start, end) {
+  lat1: number;
+  lat2: number;
+  lng1: number;
+  lng2: number;
+  sinLat1CosLat2: number;
+  sinLat2CosLat1: number;
+  cosLat1CosLat2SinDLng: number;
+
+  constructor(start:L.LatLng, end:L.LatLng) {
     let d2r = Math.PI / 180.0;
     // let r2d = 180.0 / Math.PI; //eslint-disable-line
     // maths based on http://williams.best.vwh.net/avform.htm#Int

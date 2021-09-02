@@ -19,6 +19,7 @@ import {
 
 import PortalUI from "./ui/portal";
 
+
 export function addPortal(operation, portal) {
   if (!portal) {
     alert(wX("SELECT PORTAL"));
@@ -381,7 +382,7 @@ export async function blockerAutomark(operation, first = true) {
     )
       portals.push(b.to);
   }
-  const reduced = {};
+  const reduced: { [guid: string]: number} = {};
   for (const p of portals) {
     if (!reduced[p]) reduced[p] = 0;
     reduced[p]++;

@@ -11,7 +11,7 @@ function getRestoreOpID() {
   return localStorage[window.plugin.wasabee.static.constants.SELECTED_OP_KEY];
 }
 
-export function getSelectedOperation() {
+export function getSelectedOperation(): WasabeeOp {
   return window.plugin.wasabee._selectedOp;
 }
 
@@ -50,7 +50,7 @@ export async function changeOpIfNeeded() {
 export async function loadNewDefaultOp() {
   const newOp = new WasabeeOp({
     creator: PLAYER.nickname,
-    name: wX("DEFAULT OP NAME", { date: new Date().toGMTString() }),
+    name: wX("DEFAULT OP NAME", { date: new Date().toUTCString() }),
   });
   await newOp.store();
   await makeSelectedOperation(newOp.ID);
@@ -233,7 +233,7 @@ export async function duplicateOperation(opID) {
   // XXX op.toExport() might be helpful here
 
   op.ID = generateId();
-  op.name = op.name + " " + new Date().toGMTString();
+  op.name = op.name + " " + new Date().toUTCString();
   op.creator = window.PLAYER.nickname;
   op.teamlist = null;
   op.fetched = null;
