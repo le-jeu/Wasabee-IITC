@@ -32,7 +32,7 @@ export async function updateOpPromise(operation) {
   const json = operation.toExport();
 
   try {
-    const construct = {
+    const construct : RequestInit = {
       method: "PUT",
       mode: "cors",
       cache: "default",
@@ -402,9 +402,9 @@ export function oneTimeToken(token) {
   return genericPost(url, fd);
 }
 
-async function genericPut(url, formData, contentType) {
+async function genericPut(url: string, formData: FormData | string, contentType?: string) {
   try {
-    const construct = {
+    const construct : RequestInit = {
       method: "PUT",
       mode: "cors",
       cache: "default",
@@ -457,9 +457,9 @@ async function genericPut(url, formData, contentType) {
   }
 }
 
-async function genericPost(url, formData, contentType) {
+async function genericPost(url:string, formData: FormData | string, contentType?: string) {
   try {
-    const construct = {
+    const construct : RequestInit = {
       method: "POST",
       mode: "cors",
       cache: "default",
@@ -512,9 +512,9 @@ async function genericPost(url, formData, contentType) {
   }
 }
 
-async function genericDelete(url, formData, contentType) {
+async function genericDelete(url: string, formData: FormData | string, contentType?: string) {
   try {
-    const construct = {
+    const construct : RequestInit = {
       method: "DELETE",
       mode: "cors",
       cache: "default",
@@ -650,6 +650,7 @@ export function GetUpdateList() {
   if (window.plugin && window.plugin.wasabee) {
     return window.plugin.wasabee._updateList;
   }
+  // @ts-ignore 
   return window.wasabeewebui._updateList;
 }
 
