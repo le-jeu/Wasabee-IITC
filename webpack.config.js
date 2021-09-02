@@ -143,6 +143,11 @@ const config = {
   module: {
     rules: [
       {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+      {
         test: /\.(png|gif|svg)$/,
         use: "url-loader",
       },
@@ -161,6 +166,9 @@ const config = {
         use: ["to-string-loader", "html-loader"],
       },
     ],
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
   },
   plugins: [new ESLintPlugin({ fix: true })],
 };

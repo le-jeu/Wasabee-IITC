@@ -1,0 +1,59 @@
+{
+  "_from": "@types/iitc",
+  "_id": "@types/iitc@0.30.2",
+  "_inBundle": false,
+  "_integrity": "sha512-he30EZxklzYPPmbRc/CzQIm9TEsnYKunzU66rs6KIFISPgHtXTRsuU/4dokhPOlkf9ASSh/8YxQ8vLiuVUT55g==",
+  "_location": "/@types/iitc",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@types/iitc",
+    "name": "@types/iitc",
+    "escapedName": "@types%2fiitc",
+    "scope": "@types",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#DEV:/",
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/@types/iitc/-/iitc-0.30.2.tgz",
+  "_shasum": "3d9d7bd6d5ebfe82322ea527a1a2a12d761f68e8",
+  "_spec": "@types/iitc",
+  "_where": "/home/riri/ingress/wasabee-project/Wasabee-IITC/src/code",
+  "bugs": {
+    "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues"
+  },
+  "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "McBen",
+      "url": "https://github.com/McBen"
+    }
+  ],
+  "dependencies": {
+    "@types/jquery": "*",
+    "@types/jqueryui": "*",
+    "@types/leaflet": "*",
+    "@types/spectrum": "*"
+  },
+  "deprecated": false,
+  "description": "TypeScript definitions for IITC (Ingress Intel Total Conversation)",
+  "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/iitc",
+  "license": "MIT",
+  "main": "",
+  "name": "@types/iitc",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+    "directory": "types/iitc"
+  },
+  "scripts": {},
+  "typeScriptVersion": "3.6",
+  "types": "index.d.ts",
+  "typesPublisherContentHash": "090621211671c428881afead8d3cad283d3d0d5d317cdfd6fa48b9f4fad38a4a",
+  "version": "0.30.2"
+}
