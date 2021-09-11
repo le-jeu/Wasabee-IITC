@@ -1,6 +1,9 @@
 import { WDialog } from "../leafletClasses";
 import wX from "../wX";
 
+// eslint-disable-next-line
+import { createElement } from "../dom";
+
 // This file documents the minimum requirements of a dialog in wasabee
 const AboutDialog = WDialog.extend({
   // not strictly necessary, but good style
@@ -24,22 +27,22 @@ const AboutDialog = WDialog.extend({
   // define our work in _displayDialog
   _displayDialog: function () {
     // use leaflet's DOM object creation, not bare DOM or Jquery
-    const html = L.DomUtil.create("div", null);
-    const support = L.DomUtil.create("div", null, html);
-    // wX is the translation call, it looks up the string in the agent's chosen language
-    support.innerHTML = wX("SUPPORT_INSTRUCT");
-
-    const tips = L.DomUtil.create("div", null, html);
-    tips.innerHTML =
-      "<h3>Show your love</h3><a href='https://paypal.me/pools/c/8osG170xBE' target=\"_blank\">Tip Jar@paypal</a>";
-    const about = L.DomUtil.create("div", null, html);
-    about.innerHTML =
-      "<h3>About Wasabee-IITC</h3>" +
-      "Current version: " +
-      window.plugin.wasabee.info.version;
-
-    const videos = L.DomUtil.create("div", null, html);
-    videos.innerHTML = wX("HOW_TO_VIDS");
+    const html = (
+      <div>
+        <div rawHtml={wX("SUPPORT_INSTRUCT")} />
+        <div>
+          <h3>Show your love</h3>
+          <a href="https://paypal.me/pools/c/8osG170xBE" target="_blank">
+            Tip Jar@paypal
+          </a>
+        </div>
+        <div>
+          <h3>About Wasabee-IITC</h3>
+          Current version: {window.plugin.wasabee.info.version}
+        </div>
+        <div rawHtml={wX("HOW_TO_VIDS")} />
+      </div>
+    );
 
     // Since the JqueryUI dialog buttons are hard-coded, we have to override them to translate them
     const buttons = {};

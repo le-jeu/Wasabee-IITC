@@ -5,6 +5,10 @@
   "main": "gulpfile.js",
   "private": true,
   "devDependencies": {
+    "@babel/cli": "^7.15.4",
+    "@babel/core": "^7.15.5",
+    "@babel/plugin-transform-react-jsx": "^7.14.9",
+    "babel-loader": "^8.2.2",
     "css-loader": "^5.2.6",
     "del": "^6.0.0",
     "eslint": "^7.28.0",

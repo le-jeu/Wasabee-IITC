@@ -139,9 +139,21 @@ const config = {
   },
   resolve: {
     modules: ["node_modules"],
+    extensions: [".js", ".jsx"],
   },
   module: {
     rules: [
+      {
+        test: /\.jsx$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            cacheDirectory: true,
+            cacheCompression: false,
+          }
+        }
+      },
       {
         test: /\.(png|gif|svg)$/,
         use: "url-loader",
@@ -162,7 +174,7 @@ const config = {
       },
     ],
   },
-  plugins: [new ESLintPlugin({ fix: true })],
+  plugins: [new ESLintPlugin({ fix: true, extensions: ['js', 'jsx'] })],
 };
 
 module.exports = (env, argv) => {

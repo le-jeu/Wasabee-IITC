@@ -11,6 +11,9 @@ import { greatCircleArcIntersectByLatLngs } from "../crosslinks";
 
 import PortalUI from "../ui/portal";
 
+// eslint-disable-next-line
+import { createElement } from "../dom";
+
 // now that the formerly external mm functions are in the class, some of the logic can be cleaned up
 // to not require passing values around when we can get them from this.XXX
 const MultimaxDialog = WDialog.extend({
@@ -26,79 +29,72 @@ const MultimaxDialog = WDialog.extend({
   },
 
   _displayDialog: function () {
-    const container = L.DomUtil.create("div", "container");
-    const description = L.DomUtil.create("div", "desc", container);
-    description.textContent = wX("SELECT_INSTRUCTIONS");
-
-    const description2 = L.DomUtil.create("div", "desc", container);
-    description2.textContent = wX("SEL_SB_ANCHOR2");
-
-    const anchorOneLabel = L.DomUtil.create("label", null, container);
-    anchorOneLabel.textContent = wX("ANCHOR1");
-    const anchorOneButton = L.DomUtil.create("button", null, container);
-    anchorOneButton.textContent = wX("SET");
-    this._anchorOneDisplay = L.DomUtil.create("span", null, container);
-    if (this._anchorOne) {
-      this._anchorOneDisplay.appendChild(
-        PortalUI.displayFormat(this._anchorOne, this._smallScreen)
-      );
-    } else {
-      this._anchorOneDisplay.textContent = wX("NOT_SET");
-    }
-    L.DomEvent.on(anchorOneButton, "click", () => {
+    const setAnchorOne = (ev) => {
       this._anchorOne = PortalUI.getSelected();
       if (this._anchorOne) {
         localStorage[window.plugin.wasabee.static.constants.ANCHOR_ONE_KEY] =
           JSON.stringify(this._anchorOne);
-        this._anchorOneDisplay.textContent = "";
-        this._anchorOneDisplay.appendChild(
+        ev.target.nextElementSibling.textContent = "";
+        ev.target.nextElementSibling.appendChild(
           PortalUI.displayFormat(this._anchorOne, this._smallScreen)
         );
       } else {
         alert(wX("PLEASE_SELECT_PORTAL"));
       }
-    });
-
-    const anchorTwoLabel = L.DomUtil.create("label", null, container);
-    anchorTwoLabel.textContent = wX("ANCHOR2");
-    const anchorTwoButton = L.DomUtil.create("button", null, container);
-    anchorTwoButton.textContent = wX("SET");
-    this._anchorTwoDisplay = L.DomUtil.create("span", null, container);
-    if (this._anchorTwo) {
-      this._anchorTwoDisplay.appendChild(
-        PortalUI.displayFormat(this._anchorTwo, this._smallScreen)
-      );
-    } else {
-      this._anchorTwoDisplay.textContent = wX("NOT_SET");
-    }
-    L.DomEvent.on(anchorTwoButton, "click", () => {
+    };
+    const setAnchorTwo = (ev) => {
       this._anchorTwo = PortalUI.getSelected();
       if (this._anchorTwo) {
         localStorage[window.plugin.wasabee.static.constants.ANCHOR_TWO_KEY] =
           JSON.stringify(this._anchorTwo);
-        this._anchorTwoDisplay.textContent = "";
-        this._anchorTwoDisplay.appendChild(
+        ev.target.nextElementSibling.textContent = "";
+        ev.target.nextElementSibling.appendChild(
           PortalUI.displayFormat(this._anchorTwo, this._smallScreen)
         );
       } else {
         alert(wX("PLEASE_SELECT_PORTAL"));
       }
-    });
+    };
+    const container = (
+      <div className="container">
+        <div className="desc">{wX("SELECT_INSTRUCTIONS")}</div>
+        <div className="desc">{wX("SEL_SB_ANCHOR2")}</div>
 
-    const fllabel = L.DomUtil.create("label", null, container);
-    fllabel.textContent = wX("ADD_BL");
-    fllabel.htmlFor = "wasabee-multimax-backlink";
-    this._flcheck = L.DomUtil.create("input", null, container);
-    this._flcheck.type = "checkbox";
-    this._flcheck.id = "wasabee-multimax-backlink";
+        <label>{wX("ANCHOR1")}</label>
+        <button onclick={setAnchorOne}>{wX("SET")}</button>
+        <span>
+          {this._anchorOne
+            ? PortalUI.displayFormat(this._anchorOne, this._smallScreen)
+            : wX("NOT_SET")}
+        </span>
 
-    const orderFromEndLabel = L.DomUtil.create("label", null, container);
-    orderFromEndLabel.textContent = wX("MM_INSERT_ORDER");
-    orderFromEndLabel.htmlFor = "wasabee-multimax-insert-order";
-    this._orderFromEnd = L.DomUtil.create("input", null, container);
-    this._orderFromEnd.type = "checkbox";
-    this._orderFromEnd.id = "wasabee-multimax-insert-order";
-    this._orderFromEnd.checked = true;
+        <label>{wX("ANCHOR2")}</label>
+        <button onclick={setAnchorTwo}>{wX("SET")}</button>
+        <span>
+          {this._anchorTwo
+            ? PortalUI.displayFormat(this._anchorTwo, this._smallScreen)
+            : wX("NOT_SET")}
+        </span>
+
+        <label htmlFor="wasabee-multimax-backlink">{wX("ADD_BL")}</label>
+        <input
+          type="checkbox"
+          id="wasabee-multimax-backlink"
+          onchange={(ev) => (this._flcheck = ev.target.checked)}
+        />
+        <label htmlFor="wasabee-multimax-insert-order">
+          {wX("MM_INSERT_ORDER")}
+        </label>
+        <input
+          type="checkbox"
+          id="wasabee-multimax-insert-order"
+          onchange={(ev) => (this._orderFromEnd = ev.target.checked)}
+          checked
+        />
+      </div>
+    );
+
+    this._orderFromEnd = true;
 
     // Go button
     const button = L.DomUtil.create("button", "drawb", container);
@@ -160,7 +156,7 @@ const MultimaxDialog = WDialog.extend({
     // shift current op tasks order
     if (order < this._operation.nextOrder - 1) {
       let diff = sequence.length * 2 + 1;
-      if (this._flcheck.checked) diff += sequence.length - 1;
+      if (this._flcheck) diff += sequence.length - 1;
       for (const l of this._operation.links) {
         // skip base
         if (l.toPortalId === pOne.id && l.fromPortalId === pTwo.id) continue;
@@ -199,7 +195,7 @@ const MultimaxDialog = WDialog.extend({
         description: commentPrefix + "link",
         order: ++order,
       });
-      if (this._flcheck.checked && prev) {
+      if (this._flcheck && prev) {
         this._operation.addLink(p, prev, {
           description: commentPrefix + "back link",
           order: ++order,
@@ -229,7 +225,7 @@ const MultimaxDialog = WDialog.extend({
       this._anchorOne,
       this._anchorTwo,
       portals,
-      this._orderFromEnd.checked ? this._operation.nextOrder - 1 : 0
+      this._orderFromEnd ? this._operation.nextOrder - 1 : 0
     )[0];
     console.log("multimax done");
 
