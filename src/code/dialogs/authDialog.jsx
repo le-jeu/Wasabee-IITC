@@ -12,6 +12,9 @@ import { wX } from "../wX";
 import { postToFirebase } from "../firebaseSupport";
 import WasabeeMe from "../model/me";
 
+// eslint-disable-next-line
+import { createElement } from "../dom";
+
 const AuthDialog = WDialog.extend({
   statics: {
     TYPE: "authDialog",
@@ -47,11 +50,6 @@ const AuthDialog = WDialog.extend({
       return;
     }
 
-    const content = L.DomUtil.create("div", "content");
-    this._server = L.DomUtil.create("div", null, content);
-    this._server.textContent = GetWasabeeServer();
-
-    const ua = L.DomUtil.create("div", "useragent", content);
     this._android = false;
     this._ios = false;
 
@@ -71,117 +69,130 @@ const AuthDialog = WDialog.extend({
     ) {
       this._ios = true;
       this._android = false;
-      if (navigator.userAgent.search("Safari/") == -1) {
-        // bad ones do not contain "Safari/
-        ua.textContent = wX("IOS NEED FAKE UA");
-      }
     }
 
-    const title = L.DomUtil.create("div", "desc", content);
-    if (this._ios) {
-      title.textContent = wX("AUTH IOS");
-    }
-    if (this._android) {
-      title.textContent = wX("AUTH ANDROID");
-    }
-
-    const gapiButton = L.DomUtil.create("button", "gapi", content);
-    gapiButton.textContent = wX("LOG IN");
-    // XXX until we can figure out why IITC-M iOS doesn't set the cookie very often
-    if (this._ios) gapiButton.style.display = "none";
-
-    L.DomEvent.on(gapiButton, "click", (ev) => {
-      L.DomEvent.stop(ev);
-      gapiButton.disabled = true;
-      gapiButton.textContent = "... loading ...";
-      this.gapiAuth.call(this);
-    });
-
-    if (!this._android && !this._ios) {
-      const gapiSelectButton = L.DomUtil.create("button", "gapi", content);
-      gapiSelectButton.textContent = wX("AUTH_SELECT_ACCOUNT");
-      L.DomEvent.on(gapiSelectButton, "click", (ev) => {
-        L.DomEvent.stop(ev);
-        gapiSelectButton.disabled = true;
-        gapiSelectButton.textContent = "... loading ...";
-        this.gsapiAuthChoose.call(this);
-      });
-    }
-
-    // webview cannot work on android IITC-M
-    if (this._ios) {
-      const webviewButton = L.DomUtil.create("button", "webview", content);
-      webviewButton.textContent = wX("WEBVIEW");
-      L.DomEvent.on(webviewButton, "click", (ev) => {
-        L.DomEvent.stop(ev);
-        window.open(GetWasabeeServer());
-        webviewButton.style.display = "none";
-        postwebviewButton.style.display = "block";
-      });
-      const postwebviewButton = L.DomUtil.create("button", "webview", content);
-      postwebviewButton.textContent = wX("WEBVIEW VERIFY");
-      postwebviewButton.style.display = "none";
-      L.DomEvent.on(postwebviewButton, "click", async (ev) => {
-        L.DomEvent.stop(ev);
-        try {
-          await this._successLogin();
-          postToFirebase({ id: "wasabeeLogin", method: "iOS" });
-        } catch (e) {
-          console.error(e);
-          alert(e.toString());
-        }
-        window.map.fire("wasabee:defensivekeys");
-      });
-    }
-
-    const changeServerButton = L.DomUtil.create("button", "server", content);
-    changeServerButton.textContent = wX("CHANGE SERVER");
-    L.DomEvent.on(changeServerButton, "click", (ev) => {
-      L.DomEvent.stop(ev);
-      const serverDialog = new PromptDialog({
-        title: wX("CHANGE SERVER"),
-        label: wX("CHANGE SERVER PROMPT"),
-        suggestions: window.plugin.wasabee.static.publicServers.map((e) => ({
-          text: `${e.name} (${e.url})`,
-          value: e.url,
-        })),
-        callback: () => {
-          if (serverDialog.inputField.value) {
-            SetWasabeeServer(serverDialog.inputField.value);
-            this._server.textContent = GetWasabeeServer();
-            WasabeeMe.purge();
-          }
-          window.map.fire("wasabee:defensivekeys");
-        },
-        placeholder: GetWasabeeServer(),
-      });
-      serverDialog.enable();
-    });
-
-    const oneTimeButton = L.DomUtil.create("button", "server", content);
-    oneTimeButton.textContent = "One Time Token Login";
-    L.DomEvent.on(oneTimeButton, "click", (ev) => {
-      L.DomEvent.stop(ev);
-      const ottDialog = new PromptDialog({
-        title: "One Time Token",
-        label: "One Time Token",
-        callback: async () => {
-          if (ottDialog.inputField.value) {
+    const content = (
+      <div className="content">
+        <div>{GetWasabeeServer()}</div>
+        <div className="useragent">
+          {this._ios &&
+            navigator.userAgent.search("Safari/") == -1 &&
+            wX("IOS NEED FAKE UA")}
+        </div>
+        <div className="desc">
+          {this._ios ? wX("AUTH IOS") : this._android ? wX("AUTH ANDROID") : ""}
+        </div>
+        <button
+          className="gapi"
+          style={this._ios ? "display: none" : ""}
+          onclick={(ev) => {
+            L.DomEvent.stop(ev);
+            ev.target.disabled = true;
+            ev.target.textContent = "... loading ...";
+            this.gapiAuth.call(this);
+          }}
+        >
+          {wX("LOG IN")}
+        </button>
+        <button
+          className="gapi"
+          style={this._android || this._ios ? "display: none" : ""}
+          onclick={(ev) => {
+            L.DomEvent.stop(ev);
+            ev.target.disabled = true;
+            ev.target.textContent = "... loading ...";
+            this.gsapiAuthChoose.call(this);
+          }}
+        >
+          {wX("AUTH_SELECT_ACCOUNT")}
+        </button>
+        <button
+          className="webview"
+          style={!this._ios ? "display: none" : ""}
+          onclick={(ev) => {
+            L.DomEvent.stop(ev);
+            window.open(GetWasabeeServer());
+            ev.target.style.display = "none";
+            ev.target.nextSibling.style.display = "block";
+          }}
+        >
+          {wX("WEBVIEW")}
+        </button>
+        <button
+          className="webview"
+          style="display: none"
+          onclick={async (ev) => {
+            L.DomEvent.stop(ev);
             try {
-              await oneTimeToken(ottDialog.inputField.value);
               await this._successLogin();
-              postToFirebase({ id: "wasabeeLogin", method: "One Time Token" });
+              postToFirebase({ id: "wasabeeLogin", method: "iOS" });
             } catch (e) {
               console.error(e);
               alert(e.toString());
             }
-          }
-          window.map.fire("wasabee:defensivekeys");
-        },
-        placeholder: "smurf-tears-4twn",
-      });
-      ottDialog.enable();
-    });
+            window.map.fire("wasabee:defensivekeys");
+          }}
+        >
+          {wX("WEBVIEW VERIFY")}
+        </button>
+        <button
+          onclick={(ev) => {
+            L.DomEvent.stop(ev);
+            const serverDialog = new PromptDialog({
+              title: wX("CHANGE SERVER"),
+              label: wX("CHANGE SERVER PROMPT"),
+              suggestions: window.plugin.wasabee.static.publicServers.map(
+                (e) => ({
+                  text: `${e.name} (${e.url})`,
+                  value: e.url,
+                })
+              ),
+              callback: () => {
+                if (serverDialog.inputField.value) {
+                  SetWasabeeServer(serverDialog.inputField.value);
+                  content.firstChild.textContent = GetWasabeeServer();
+                  WasabeeMe.purge();
+                }
+                window.map.fire("wasabee:defensivekeys");
+              },
+              placeholder: GetWasabeeServer(),
+            });
+            serverDialog.enable();
+          }}
+        >
+          {wX("CHANGE SERVER")}
+        </button>
+        <button
+          onclick={(ev) => {
+            L.DomEvent.stop(ev);
+            const ottDialog = new PromptDialog({
+              title: "One Time Token",
+              label: "One Time Token",
+              callback: async () => {
+                if (ottDialog.inputField.value) {
+                  try {
+                    await oneTimeToken(ottDialog.inputField.value);
+                    await this._successLogin();
+                    postToFirebase({
+                      id: "wasabeeLogin",
+                      method: "One Time Token",
+                    });
+                  } catch (e) {
+                    console.error(e);
+                    alert(e.toString());
+                  }
+                }
+                window.map.fire("wasabee:defensivekeys");
+              },
+              placeholder: "smurf-tears-4twn",
+            });
+            ottDialog.enable();
+          }}
+        >
+          One Time Token Login
+        </button>
+      </div>
+    );
 
     const buttons = {};
     buttons[wX("OK")] = () => {

@@ -9,6 +9,7 @@ export function createElement(tagName, attrs = {}, ...children) {
     return elem;
   }
   for (const child of children) {
+    if (child === false) continue;
     if (Array.isArray(child)) elem.append(...child);
     else elem.append(child);
   }
