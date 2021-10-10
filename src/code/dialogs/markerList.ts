@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import OperationChecklistDialog from "./checklist";
 import { getSelectedOperation } from "../selectedOp";
 import { loadFaked, clearAllMarkers } from "../uiCommands";

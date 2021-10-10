@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog, WDialogOptions } from "../leafletClasses";
 import WasabeeLink from "../model/link";
 import WasabeeMarker from "../model/marker";
@@ -6,7 +8,7 @@ import { getSelectedOperation } from "../selectedOp";
 
 import PortalUI from "../ui/portal";
 import LinkUI from "../ui/link";
-import WasabeePortal from "../model/portal";
+import type WasabeePortal from "../model/portal";
 
 
 interface StateDialogOptions extends WDialogOptions {

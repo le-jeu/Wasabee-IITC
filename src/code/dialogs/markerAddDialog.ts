@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog } from "../leafletClasses";
 import WasabeeMe from "../model/me";
 import WasabeeTeam from "../model/team";
@@ -7,7 +9,7 @@ import { getSelectedOperation } from "../selectedOp";
 import wX from "../wX";
 
 import PortalUI from "../ui/portal";
-import WasabeePortal from "../model/portal";
+import type WasabeePortal from "../model/portal";
 
 
 class MarkerAddDialog extends WDialog {

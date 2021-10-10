@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog, WDialogOptions } from "../leafletClasses";
 import WasabeePortal from "../model/portal";
 import { getSelectedOperation } from "../selectedOp";
@@ -11,7 +13,7 @@ import {
 import wX from "../wX";
 
 import PortalUI from "../ui/portal";
-import WasabeeOp from "../model/operation";
+import type WasabeeOp from "../model/operation";
 
 
 class HomogeneousDialog extends WDialog {

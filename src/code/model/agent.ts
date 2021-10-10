@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { agentPromise } from "../server";
 import WasabeeMe from "./me";
 import WasabeeTeam from "./team";

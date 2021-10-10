@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog } from "../leafletClasses";
 import Sortable from "../sortable";
 import wX from "../wX";

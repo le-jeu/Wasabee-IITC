@@ -4,7 +4,9 @@ import { getSelectedOperation } from "../selectedOp";
 import { blockerAutomark } from "../uiCommands";
 import VLatLon from "geodesy/latlon-ellipsoidal-vincenty";
 import WasabeeMarker from "../model/marker";
-import WasabeeBlocker from "../model/blocker";
+import WasabeeBlocker from "../model/blocker";import * as L from "leaflet";
+
+
 
 interface TrawlDialogOptions extends WDialogOptions {
   points: L.LatLng[],

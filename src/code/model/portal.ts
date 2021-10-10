@@ -1,5 +1,6 @@
-import { generateId } from "../auxiliar";
+import * as L from "leaflet";
 
+import { generateId } from "../auxiliar";
 
 export default class WasabeePortal {
   id: string;
@@ -9,7 +10,7 @@ export default class WasabeePortal {
   comment: string;
   hardness: string;
   _latLng: L.LatLng;
-  
+
   constructor(obj) {
     if (typeof obj == "string") {
       try {

@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import WasabeeLink from "./link";
 import WasabeePortal from "./portal";
 import WasabeeMarker from "./marker";

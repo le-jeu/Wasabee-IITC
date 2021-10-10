@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog } from "../leafletClasses";
 import { deleteOpPromise } from "../server";
 import { clearAllItems, zoomToOperation } from "../uiCommands";

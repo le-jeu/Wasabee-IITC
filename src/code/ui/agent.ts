@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import PortalUI from "./portal";
 import ConfirmDialog from "../dialogs/confirmDialog";
 import AgentDialog from "../dialogs/agentDialog";

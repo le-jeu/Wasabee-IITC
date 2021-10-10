@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog } from "../leafletClasses";
 import {
   SendAccessTokenAsync,
@@ -15,7 +17,7 @@ import WasabeeMe from "../model/me";
 
 class AuthDialog extends WDialog {
   static TYPE = "authDialog";
-  
+
   _server: HTMLDivElement;
   _android: boolean;
   _ios: boolean;

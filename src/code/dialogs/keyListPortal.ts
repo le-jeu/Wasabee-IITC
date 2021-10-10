@@ -1,3 +1,4 @@
+import * as L from "leaflet";
 import { WDialog, WDialogOptions } from "../leafletClasses";
 import Sortable from "../sortable";
 import WasabeeAgent from "../model/agent";
@@ -5,8 +6,8 @@ import { getSelectedOperation } from "../selectedOp";
 import wX from "../wX";
 
 import PortalUI from "../ui/portal";
-import { KeyOnHand } from "../model/operation";
 
+import type { KeyOnHand } from "../model/operation";
 
 interface KeyListPortalOptions extends WDialogOptions {
   portalID: string,

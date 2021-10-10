@@ -1,3 +1,4 @@
+import * as L from "leaflet";
 
 export class WTooltip extends L.Class {
   _pane: HTMLElement;

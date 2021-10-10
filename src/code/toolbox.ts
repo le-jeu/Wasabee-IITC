@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import AboutDialog from "./dialogs/about";
 import SettingsDialog from "./dialogs/settingsDialog";
 import OnlineAgentList from "./dialogs/onlineAgentList";

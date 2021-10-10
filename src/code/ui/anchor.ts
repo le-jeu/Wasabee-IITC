@@ -1,5 +1,7 @@
+import * as L from "leaflet";
+
 import LinkListDialog from "../dialogs/linkListDialog";
-import WasabeeOp from "../model/operation";
+import type WasabeeOp from "../model/operation";
 import { getSelectedOperation } from "../selectedOp";
 import { swapPortal, deletePortal } from "../uiCommands";
 import wX from "../wX";

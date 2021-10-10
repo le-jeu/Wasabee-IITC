@@ -1,3 +1,4 @@
+import * as L from "leaflet";
 import { WDialog } from "../leafletClasses";
 import Sortable from "../sortable";
 import { opKeyPromise } from "../server";
@@ -8,7 +9,7 @@ import { getSelectedOperation } from "../selectedOp";
 import wX from "../wX";
 
 import PortalUI from "../ui/portal";
-import WasabeeOp from "../model/operation";
+import type WasabeeOp from "../model/operation";
 
 
 type Key = {

@@ -1,5 +1,6 @@
-const Wasabee = window.plugin.wasabee;
+import * as L from "leaflet";
 
+const Wasabee = window.plugin.wasabee;
 
 // the skins probably aren't loaded by the time W's init is called
 export function initSkin() {

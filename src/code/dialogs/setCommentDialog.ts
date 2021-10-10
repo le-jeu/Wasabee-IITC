@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog, WDialogOptions } from "../leafletClasses";
 import WasabeePortal from "../model/portal";
 import WasabeeLink from "../model/link";
@@ -6,7 +8,7 @@ import wX from "../wX";
 
 import PortalUI from "../ui/portal";
 import LinkUI from "../ui/link";
-import WasabeeOp from "../model/operation";
+import type WasabeeOp from "../model/operation";
 
 
 interface SetCommentDialogOptions extends WDialogOptions {

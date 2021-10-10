@@ -2,13 +2,17 @@
   "compilerOptions": {
     "outDir": "./built",
     "sourceMap": true,
-    "module": "es6",
     "target": "ES2015",
-    "allowJs": true,
     "moduleResolution": "node",
-    "skipLibCheck": true,
-    "downlevelIteration": true,
-    "typeRoots": ["node_modules/@types", "src/types"]
+    "importsNotUsedAsValues": "error",
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "strict": false,
+    "typeRoots": ["src/types", "node_modules/@types"],
+    "skipLibCheck": false,
+    "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true
   },
-  "include": ["./src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules/*"]
 }

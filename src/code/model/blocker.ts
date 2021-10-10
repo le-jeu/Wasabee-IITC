@@ -1,4 +1,4 @@
-mport type WasabeeOp from "./operation";
+import type WasabeeOp from "./operation";
 import type WasabeePortal from "./portal";
 
 import db from "../db";
@@ -58,7 +58,7 @@ export default class WasabeeBlocker {
 
   static async removeBlocker(op: WasabeeOp, portalId: string) {
     const store = (await db).transaction("blockers", "readwrite").store;
-    let cursor = await store
+    let cursor: any = await store
       .index("from")
       .openKeyCursor(IDBKeyRange.only([op.ID, portalId]));
     while (cursor) {
@@ -76,8 +76,8 @@ export default class WasabeeBlocker {
   }
 
   static async removeBlockers(opID: string) {
-    let store = (await db).transaction("blockers", "readwrite").store;
-    let cursor = await store
+    let store: any = (await db).transaction("blockers", "readwrite").store;
+    let cursor: any = await store
       .index("opID")
       .openKeyCursor(IDBKeyRange.only(opID));
     while (cursor) {

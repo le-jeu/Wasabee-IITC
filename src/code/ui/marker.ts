@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import WasabeeAgent from "../model/agent";
 
 import SetCommentDialog from "../dialogs/setCommentDialog";
@@ -10,7 +12,7 @@ import AgentUI from "./agent";
 import PortalUI from "./portal";
 
 import wX from "../wX";
-import WasabeeMarker from "../model/marker";
+import type WasabeeMarker from "../model/marker";
 
 
 class WLMarker extends PortalUI.WLPortal {

@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog, WDialogOptions } from "../leafletClasses";
 import WasabeePortal from "../model/portal";
 import { getSelectedOperation } from "../selectedOp";
@@ -7,7 +9,7 @@ import { clearAllLinks, getAllPortalsOnScreen } from "../uiCommands";
 import wX from "../wX";
 
 import PortalUI from "../ui/portal";
-import WasabeeOp from "../model/operation";
+import type WasabeeOp from "../model/operation";
 
 
 class OnionfieldDialog extends WDialog {

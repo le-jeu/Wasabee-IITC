@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog } from "../leafletClasses";
 import Sortable, { SortableField } from "../sortable";
 import { getSelectedOperation } from "../selectedOp";
@@ -5,8 +7,8 @@ import WasabeeTeam from "../model/team";
 import WasabeeMe from "../model/me";
 import { addPermPromise, delPermPromise } from "../server";
 import wX from "../wX";
-import { OpPermItem } from "../model/operation";
 
+import type { OpPermItem } from "../model/operation";
 
 class OpPermList extends WDialog {
   _me: WasabeeMe;

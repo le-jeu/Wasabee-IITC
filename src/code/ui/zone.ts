@@ -1,5 +1,6 @@
-import WasabeeZone from "../model/zone";
+import * as L from "leaflet";
 
+import type WasabeeZone from "../model/zone";
 
 class WLZone extends L.LayerGroup {
   constructor (zone: WasabeeZone) {
@@ -9,7 +10,7 @@ class WLZone extends L.LayerGroup {
     let layer;
     if (zone.points.length == 1)
       layer = L.marker(zone.points[0], {
-        // @ts-ignore 
+        // @ts-ignore
         icon: L.divIcon.coloredSvg(zone.color),
       });
     else if (zone.points.length == 2)

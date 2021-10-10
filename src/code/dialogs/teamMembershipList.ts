@@ -1,10 +1,12 @@
+import * as L from "leaflet";
+
 import { WDialog, WDialogOptions } from "../leafletClasses";
 import Sortable from "../sortable";
 import WasabeeTeam from "../model/team";
 import wX from "../wX";
 
 import AgentUI from "../ui/agent";
-import WasabeeAgent from "../model/agent";
+import type WasabeeAgent from "../model/agent";
 
 
 interface TeamMembershipListOptions extends WDialogOptions {

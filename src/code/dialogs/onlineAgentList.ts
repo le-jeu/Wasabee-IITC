@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog } from "../leafletClasses";
 import Sortable from "../sortable";
 import WasabeeAgent from "../model/agent";
@@ -39,7 +41,7 @@ class OnlineAgentList extends WDialog {
     });
   }
 
-  async update () { 
+  async update () {
     this._table = new Sortable<WasabeeAgent>();
     this._table.fields = [
       {

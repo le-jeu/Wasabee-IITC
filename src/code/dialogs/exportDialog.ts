@@ -1,8 +1,10 @@
+import * as L from "leaflet";
+
 import { WDialog } from "../leafletClasses";
 import { getSelectedOperation } from "../selectedOp";
 import { convertColorToHex } from "../auxiliar";
 import wX from "../wX";
-import WasabeeOp from "../model/operation";
+import type WasabeeOp from "../model/operation";
 
 
 // export screen

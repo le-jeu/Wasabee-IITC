@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog } from "../leafletClasses";
 import WasabeeMe, { MeTeam } from "../model/me";
 import Sortable from "../sortable";

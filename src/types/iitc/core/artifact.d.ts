@@ -1,11 +1,13 @@
-export { };
+import * as L from 'leaflet';
+
+export {};
 
 declare global {
   class Artifact {
     // private _layer: L.LayerGroup;
-    REFRESH_JITTER: number;  // 2 minute random period so not all users refresh at once
-    REFRESH_SUCCESS: number;  // 60 minutes on success
-    REFRESH_FAILURE: number;  // 2 minute retry on failure
+    REFRESH_JITTER: number; // 2 minute random period so not all users refresh at once
+    REFRESH_SUCCESS: number; // 60 minutes on success
+    REFRESH_FAILURE: number; // 2 minute retry on failure
     portalInfo: {};
     artifactTypes: { [type: string]: any };
     entities: [];

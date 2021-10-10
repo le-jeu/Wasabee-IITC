@@ -171,6 +171,9 @@ const config = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   plugins: [new ESLintPlugin({ fix: true })],
+  externals: {
+    leaflet: 'L',
+  },
 };
 
 module.exports = (env, argv) => {

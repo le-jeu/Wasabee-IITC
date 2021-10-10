@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import WasabeeMe from "./model/me";
 import { dKeylistPromise } from "./server";
 import WasabeeAgent from "./model/agent";
@@ -142,12 +144,11 @@ function drawMarker(dk: WDKey) {
         marker.setPopupContent(content);
         if (marker.getPopup().getElement().firstElementChild)
           marker.getPopup().getElement().firstElementChild.classList.add("wasabee-popup");
-        marker.update();
       } catch (e) {
         console.error("getting wd marker popup: ", e);
         marker.setPopupContent(e);
-        marker.update();
       }
+      marker.update();
       marker.openPopup();
     },
     marker

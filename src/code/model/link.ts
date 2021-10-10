@@ -1,7 +1,9 @@
+import * as L from "leaflet";
+
 import { generateId } from "../auxiliar";
 import { getSelectedOperation } from "../selectedOp";
-import WasabeeOp from "./operation";
 
+import type WasabeeOp from "./operation";
 
 export default class WasabeeLink {
   ID: string;

@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import OperationChecklistDialog from "./checklist";
 import wX from "../wX";
 import { loadFaked } from "../uiCommands";
@@ -5,10 +7,10 @@ import { getSelectedOperation } from "../selectedOp";
 
 import PortalUI from "../ui/portal";
 import LinkUI from "../ui/link";
-import { WDialogOptions } from "../leafletClasses";
-import WasabeePortal from "../model/portal";
-import WasabeeOp from "../model/operation";
 
+import type { WDialogOptions } from "../leafletClasses";
+import type WasabeePortal from "../model/portal";
+import type WasabeeOp from "../model/operation";
 
 interface LinkListDialogOptions extends WDialogOptions {
   portal: WasabeePortal;

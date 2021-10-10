@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog } from "../leafletClasses";
 import {
   removeAgentFromTeamPromise,
@@ -18,8 +20,8 @@ import wX from "../wX";
 import ConfirmDialog from "./confirmDialog";
 
 import AgentUI from "../ui/agent";
-import WasabeeAgent from "../model/agent";
 
+import type WasabeeAgent from "../model/agent";
 
 interface ManageTeamDialogOptions {
   team: MeTeam,

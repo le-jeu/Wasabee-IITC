@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog } from "../leafletClasses";
 import WasabeeMe from "../model/me";
 import { dKeyPromise } from "../server";
@@ -6,7 +8,7 @@ import WasabeeDList from "./wasabeeDlist";
 import { getAgentPortalWasabeeDkeys } from "../wd";
 
 import PortalUI from "../ui/portal";
-import WasabeePortal from "../model/portal";
+import type WasabeePortal from "../model/portal";
 
 
 class DefensiveKeysDialog extends WDialog {

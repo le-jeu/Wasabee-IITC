@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import statics from "./static";
 import { initCrossLinks } from "./crosslinks";
 import initServer from "./server";
@@ -33,10 +35,8 @@ window.plugin.wasabee.init = async () => {
   Object.freeze(Wasabee.static);
 
   if (
-    // @ts-ignore
-    window.iitcBuildDate == undefined ||
-    // @ts-ignore
-    window.iitcBuildDate < "2020-01-18-170317"
+    iitcBuildDate == undefined ||
+    iitcBuildDate < "2020-01-18-170317"
   ) {
     alert(
       "Wasabee won't work on this version of IITC; please <a href='https://iitc.app'>update to 0.30.1 or newer from https://iitc.app</a>. On desktop, <strong>do not use the IITC button</strong>, use the TamperMonkey/GreaseMonkey method."

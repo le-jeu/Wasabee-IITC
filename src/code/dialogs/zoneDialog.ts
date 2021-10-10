@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog, WTooltip } from "../leafletClasses";
 import wX from "../wX";
 import { getSelectedOperation } from "../selectedOp";

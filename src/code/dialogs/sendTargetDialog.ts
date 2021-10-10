@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog, WDialogOptions } from "../leafletClasses";
 import WasabeeMarker from "../model/marker";
 import WasabeePortal from "../model/portal";

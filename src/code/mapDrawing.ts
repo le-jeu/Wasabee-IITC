@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import WasabeeMe from "./model/me";
 import WasabeeTeam from "./model/team";
 import WasabeeAgent from "./model/agent";
@@ -64,7 +66,6 @@ function resetLinks(operation: WasabeeOp) {
 
   for (const l of operation.links) {
     const link = new LinkUI.WLLink(l, operation);
-    // @ts-ignore
     link.addTo(Wasabee.linkLayerGroup);
   }
 }
@@ -94,7 +95,6 @@ export function drawBackgroundOp(operation, layerGroup?: L.LayerGroup, style?: L
     const latLngs = link.getLatLngs(operation);
     if (!latLngs) continue;
 
-    // @ts-ignore
     const newlink = new L.GeodesicPolyline(latLngs, style);
     newlink.addTo(layerGroup);
   }

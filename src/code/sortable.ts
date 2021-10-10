@@ -1,3 +1,4 @@
+import * as L from "leaflet";
 
 interface SortableItem<T> {
   obj: T,

@@ -1,4 +1,5 @@
-import { WDialog, WDialogOptions } from "../leafletClasses";
+import * as L from "leaflet";
+
 import WasabeePortal from "../model/portal";
 import { getSelectedOperation } from "../selectedOp";
 import {
@@ -10,8 +11,9 @@ import wX from "../wX";
 import MultimaxDialog from "./multimaxDialog";
 
 import PortalUI from "../ui/portal";
-import WasabeeOp from "../model/operation";
 
+import type { WDialog, WDialogOptions } from "../leafletClasses";
+import type WasabeeOp from "../model/operation";
 
 // now that the formerly external mm functions are in the class, some of the logic can be cleaned up
 // to not require passing values around when we can get them from this.XXX

@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import AssignDialog from "../dialogs/assignDialog";
 import { getSelectedOperation } from "../selectedOp";
 import { convertColorToHex } from "../auxiliar";
@@ -5,10 +7,8 @@ import { addToColorList } from "../skin";
 import wX from "../wX";
 
 import PortalUI from "./portal";
-import WasabeeMarker from "../model/marker";
-import WasabeeOp from "../model/operation";
-import WasabeeLink from "../model/link";
-
+import type WasabeeOp from "../model/operation";
+import type WasabeeLink from "../model/link";
 
 // returns a DOM object appropriate for display
 // do we still need the operation here?
@@ -81,7 +81,6 @@ function minLevel(link: WasabeeLink, operation: WasabeeOp) {
   return a;
 }
 
-// @ts-ignore 
 class WLLink extends L.GeodesicPolyline {
   _wlink: any;
   constructor (link: WasabeeLink, operation: WasabeeOp) {
@@ -103,7 +102,6 @@ class WLLink extends L.GeodesicPolyline {
 
     this._wlink = link;
 
-    // @ts-ignore 
     this.bindPopup((layer: WLLink) => layer._getPopup(), {
       className: "wasabee-popup",
       closeButton: false,

@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import WasabeePortal from "../model/portal";
 
 import { getSelectedOperation } from "../selectedOp";
@@ -5,7 +7,8 @@ import AssignDialog from "../dialogs/assignDialog";
 import SendTargetDialog from "../dialogs/sendTargetDialog";
 import SetCommentDialog from "../dialogs/setCommentDialog";
 import wX from "../wX";
-import { IITC } from "../../types/iitc";
+
+import type { IITC } from "../../types/iitc";
 
 
 function fromIITC(p: IITC.Portal) {
@@ -121,10 +124,10 @@ class WLPortal extends L.Marker {
 
     this.type = "portal";
 
-    // @ts-ignore 
-    this.off("click", this._openPopup); 
+    // @ts-ignore
+    this.off("click", this._openPopup);
     window.registerMarkerForOMS(this);
-    // @ts-ignore 
+    // @ts-ignore
     this.on("spiderfiedclick", this._openPopup);
   }
 

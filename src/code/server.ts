@@ -650,7 +650,7 @@ export function GetUpdateList() {
   if (window.plugin && window.plugin.wasabee) {
     return window.plugin.wasabee._updateList;
   }
-  // @ts-ignore 
+  // @ts-ignore
   return window.wasabeewebui._updateList;
 }
 

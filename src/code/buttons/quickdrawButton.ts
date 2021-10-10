@@ -1,11 +1,13 @@
+import * as L from "leaflet";
+
 import { WTooltip, WButton } from "../leafletClasses";
 import wX from "../wX";
 import { getSelectedOperation } from "../selectedOp";
 import { postToFirebase } from "../firebaseSupport";
 
 import PortalUI from "../ui/portal";
-import WasabeeOp from "../model/operation";
-import WasabeePortal from "../model/portal";
+import type WasabeeOp from "../model/operation";
+import type WasabeePortal from "../model/portal";
 
 
 class QuickdrawButton extends WButton {
@@ -306,7 +308,6 @@ class QuickDrawControl extends L.Handler {
       localStorage[window.plugin.wasabee.static.constants.ANCHOR_ONE_KEY] =
         JSON.stringify(this._anchor1);
 
-      // @ts-ignore
       this._guideA = L.geodesicPolyline(
         [selectedPortal.latLng, selectedPortal.latLng],
         guideStyle
@@ -325,7 +326,7 @@ class QuickDrawControl extends L.Handler {
       this._tooltip.updateContent(this._getTooltipText());
       localStorage[window.plugin.wasabee.static.constants.ANCHOR_TWO_KEY] =
         JSON.stringify(this._anchor2);
-      // @ts-ignore
+
       this._guideB = L.geodesicPolyline(
         [selectedPortal.latLng, selectedPortal.latLng],
         guideStyle
@@ -387,7 +388,6 @@ class QuickDrawControl extends L.Handler {
     guideStyle.anchorLL = selectedPortal.latLng;
 
     if (this._guideA) this._guideA.remove();
-    // @ts-ignore
     this._guideA = L.geodesicPolyline(
       [selectedPortal.latLng, selectedPortal.latLng],
       guideStyle
@@ -416,7 +416,6 @@ class QuickDrawControl extends L.Handler {
     guideStyle.anchorLL = this._anchor.latLng;
 
     if (this._guideA) this._guideA.remove();
-    // @ts-ignore
     this._guideA = L.geodesicPolyline(
       [this._anchor.latLng, selectedPortal.latLng],
       guideStyle

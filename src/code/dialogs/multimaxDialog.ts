@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { WDialog, WDialogOptions } from "../leafletClasses";
 import WasabeePortal from "../model/portal";
 import { getSelectedOperation } from "../selectedOp";
@@ -10,7 +12,7 @@ import {
 import { greatCircleArcIntersectByLatLngs } from "../crosslinks";
 
 import PortalUI from "../ui/portal";
-import WasabeeOp from "../model/operation";
+import type WasabeeOp from "../model/operation";
 
 
 // now that the formerly external mm functions are in the class, some of the logic can be cleaned up

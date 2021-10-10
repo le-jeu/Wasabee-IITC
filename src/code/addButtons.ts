@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import { ButtonsControl, ButtonsControlOptions, WButton } from "./leafletClasses";
 import QuickdrawButton from "./buttons/quickdrawButton";
 import WasabeeButton from "./buttons/wasabeeButton";

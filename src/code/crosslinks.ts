@@ -1,3 +1,5 @@
+import * as L from "leaflet";
+
 import WasabeePortal from "./model/portal";
 import WasabeeMarker from "./model/marker";
 import WasabeeBlocker from "./model/blocker";
@@ -5,6 +7,7 @@ import { getSelectedOperation } from "./selectedOp";
 
 import PortalUI from "./ui/portal";
 
+import type { IITC } from "../types/iitc";
 
 // from iitc rework : https://github.com/IITC-CE/ingress-intel-total-conversion/pull/333
 const d2r = Math.PI / 180;
@@ -164,7 +167,6 @@ function testPolyLine(wasabeeLink, realLink, operation) {
 
 function showCrossLink(link, operation) {
   // this should be in static.js or skin
-  // @ts-ignore
   const blocked = L.geodesicPolyline(link.getLatLngs(operation), {
     color: "#d22",
     opacity: 0.7,
@@ -211,7 +213,6 @@ function testSelfBlock(incoming, operation) {
   for (const against of operation.links) {
     if (incoming.ID == against.ID) continue;
     if (greatCircleArcIntersect(against, incoming)) {
-      // @ts-ignore
       const blocked = L.geodesicPolyline(
         against.getLatLngs(operation),
         window.plugin.wasabee.skin.selfBlockStyle

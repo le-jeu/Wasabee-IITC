@@ -1,7 +1,9 @@
+import * as L from "leaflet";
+
 import { WDialog, WDialogOptions } from "../leafletClasses";
-import WasabeeZone from "../model/zone";
 import { getSelectedOperation } from "../selectedOp";
 import { addToColorList } from "../skin";
+import type WasabeeZone from "../model/zone";
 
 
 interface ZoneSetColorDialogOptions extends WDialogOptions {

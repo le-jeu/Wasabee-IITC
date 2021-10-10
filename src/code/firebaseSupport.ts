@@ -4,6 +4,8 @@
  * This way we can setup a service worker under a domain we control and
  * simply pass the messages along using window.parent.postMessage.
  */
+import * as L from "leaflet";
+
 import { drawSingleTeam, drawSingleAgent } from "./mapDrawing";
 import { opPromise, GetWasabeeServer } from "./server";
 import {
