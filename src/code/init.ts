@@ -329,3 +329,7 @@ function initGoogleAPI() {
     script
   );
 }
+
+export default {
+  wasabee: Wasabee
+};

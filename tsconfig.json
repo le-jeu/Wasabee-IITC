@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./built",
+    "outDir": "rollup/build/lib",
     "sourceMap": true,
     "target": "ES2020",
     "moduleResolution": "node",
@@ -12,13 +12,19 @@
       "./src/types",
       "node_modules/@types"
     ],
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "downlevelIteration": true,
     "allowJs": true,
     "checkJs": false,
     "allowUmdGlobalAccess": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable",
+      "WebWorker"
+    ]
   },
   "include": [
     "src/**/*"
