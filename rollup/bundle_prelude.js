@@ -1,10 +1,16 @@
 /* eslint-disable */
 
-var init;
-function define(/*_, */chunk) {
-    init = chunk;
-    if (window.iitcLoaded && typeof setup === "function") 
-        setup();
+var shared, worker, init;
+function define(_, chunk) {
+    if (!shared) {
+        shared = chunk;
+    } else if (!worker) {
+        worker = chunk;
+    } else {
+        init = chunk;
+        if (window.iitcLoaded && typeof setup === "function") 
+            setup();
+    }
 }
 
 if (typeof window.plugin !== "function") {
@@ -19,8 +25,12 @@ window.plugin.wasabee.info = {
 };
 
 function setup() {
+    var workerBundleString = 'var sharedChunk = {}; (' + shared + ')(sharedChunk); (' + worker + ')(sharedChunk);'
+
     var sharedChunk = {};
-    var wasabee = init(sharedChunk);
+    shared(sharedChunk);
+    init(sharedChunk);
+    window.plugin.wasabee.workerUrl = window.URL.createObjectURL(new Blob([workerBundleString], { type: 'text/javascript' }));
     window.plugin.wasabee.init();
 }
 

@@ -65,12 +65,13 @@ const outputFile = !production
 
 const config = [
   {
-    input: "src/code/init.ts",
+    input: ["src/code/init.ts", "src/code/worker/worker.ts"],
     output: {
       dir: "rollup/build/lib",
       sourcemap: "inline",
       indent: false,
       format: "amd",
+			chunkFileNames: 'shared.js'
     },
     treeshake: production,
     plugins: [

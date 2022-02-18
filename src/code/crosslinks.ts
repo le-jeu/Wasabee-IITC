@@ -158,7 +158,8 @@ export async function checkAllLinks() {
   const blockers = await WasabeeBlocker.getAll(operation);
   for (const l of operation.links) {
     l.blocked = testBlocked(l, operation, blockers);
-    l.selfBlocked = testSelfBlock(l, operation);
+    if (!window.plugin.wasabee.workerUrl)
+      l.selfBlocked = testSelfBlock(l, operation);
   }
   for (const b of blockers) {
     if (b.guid) window.plugin.wasabee._crosslinkCache.set(b.guid, true);
@@ -171,7 +172,21 @@ export async function checkAllLinks() {
   for (const link of linkGenerator) {
     await testLink(link, operation);
   }
-  window.map.fire("wasabee:crosslinks:done");
+
+  if (window.plugin.wasabee.workerUrl) {
+    const worker = new Worker(window.plugin.wasabee.workerUrl);
+    worker.onmessage = (ev) => {
+      const linksID = ev.data.blocked as TaskID[];
+      for (const l of operation.links) {
+        l.selfBlocked = linksID.includes(l.ID);
+      }
+      window.map.fire("wasabee:crosslinks:done");
+    };
+    worker.postMessage({
+      type: "selfblock",
+      opID: operation.ID,
+    });
+  } else window.map.fire("wasabee:crosslinks:done");
 }
 
 function onLinkAdded(data: EventLinkAdded) {

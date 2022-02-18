@@ -57,6 +57,7 @@ export interface Wasabee {
   buttons: ButtonsControl;
   defensiveLayers: LayerGroup;
   crossLinkLayers: LayerGroup;
+  workerUrl?: string;
 }
 
 const Wasabee: Wasabee = window.plugin.wasabee;
