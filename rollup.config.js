@@ -10,6 +10,8 @@ import replace from "@rollup/plugin-replace";
 import childProcess from "child_process";
 import { string } from "rollup-plugin-string";
 import { terser } from "rollup-plugin-terser";
+import { visualizer } from "rollup-plugin-visualizer";
+import graph from "./rollup/plugins/graph";
 
 import inlineSvg from "rollup-plugin-inline-svg";
 
@@ -71,7 +73,7 @@ const config = [
       sourcemap: "inline",
       indent: false,
       format: "amd",
-			chunkFileNames: 'shared.js'
+      chunkFileNames: "shared.js",
     },
     treeshake: production,
     plugins: [
@@ -93,6 +95,11 @@ const config = [
       commonjs(),
       typescript({ inlineSources: true }),
       production && terser(),
+      graph({
+        prune: true,
+        exclude: "^[^/].*",
+      }),
+      visualizer(),
     ],
   },
   {
