@@ -31,5 +31,28 @@ self.onmessage = async (event: MessageEvent) => {
       opID: data.opID,
       blocked: blocked,
     });
+  } else if (data.type === "block") {
+    const { opID, linkIDs, llE6s } = data;
+    const operation = await WasabeeOp.load(opID);
+    if (operation) {
+      const result: LinkID[] = [];
+      for (let i = 0; i < linkIDs.length; i++) {
+        const ll = [
+          { lat: llE6s[i][0][0] * 1e-6, lng: llE6s[i][0][1] * 1e-6 },
+          { lat: llE6s[i][1][0] * 1e-6, lng: llE6s[i][1][1] * 1e-6 },
+        ];
+        for (const l of operation.links) {
+          if (greatCircleArcIntersectByLatLngs(l.getLatLngs(operation), ll)) {
+            result.push(linkIDs[i]);
+            break;
+          }
+        }
+      }
+      self.postMessage({
+        type: data.type,
+        opID: opID,
+        linkIDs: result,
+      });
+    }
   }
 };

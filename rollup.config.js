@@ -6,19 +6,19 @@ import json from "@rollup/plugin-json";
 import sourcemaps from "rollup-plugin-sourcemaps";
 import postcss from "rollup-plugin-postcss";
 import url from "postcss-url";
-import replace from "@rollup/plugin-replace";
+import cssnano from "cssnano";
 import childProcess from "child_process";
 import { string } from "rollup-plugin-string";
 import { terser } from "rollup-plugin-terser";
 import { visualizer } from "rollup-plugin-visualizer";
 import graph from "./rollup/plugins/graph";
+import path from "path";
 
 import inlineSvg from "rollup-plugin-inline-svg";
 
 import pluginConfig from "./plugin.config.json";
 
-const { BUILD, MINIFY, ROLLUP_WATCH } = process.env;
-//const minified = MINIFY === 'true';
+const { BUILD } = process.env;
 const production = BUILD === "production";
 
 function getCommitShort() {
@@ -70,7 +70,7 @@ const config = [
     input: ["src/code/init.ts", "src/code/worker/worker.ts"],
     output: {
       dir: "rollup/build/lib",
-      sourcemap: "inline",
+      sourcemap: true,
       indent: false,
       format: "amd",
       chunkFileNames: "shared.js",
@@ -83,6 +83,10 @@ const config = [
         extract: false,
         inject: false,
         plugins: [
+          production &&
+            cssnano({
+              preset: "default",
+            }),
           url({
             url: "inline",
           }),
@@ -108,20 +112,17 @@ const config = [
       name: "wasabee",
       file: "rollup/bundle.js",
       format: production ? "amd" : "iife",
-      sourcemap: production ? true : "inline",
+      sourcemap: production ? false : "inline",
+      sourcemapPathTransform: (relativeSourcePath) => {
+        return path.join('iitc://plugins/wasabee', path.resolve('/', relativeSourcePath));
+      },
       indent: false,
-      intro: fs.readFileSync("./rollup/bundle_prelude.js", "utf8"),
+      intro: fs
+        .readFileSync("./rollup/bundle_prelude.js", "utf8")
+        .replace("__buildVersion__", JSON.stringify(version)),
     },
     treeshake: false,
-    plugins: [
-      sourcemaps(),
-      replace({
-        preventAssignment: true,
-        values: {
-          __buildVersion__: JSON.stringify(version),
-        },
-      }),
-    ],
+    plugins: [sourcemaps()],
   },
   {
     input: production ? "rollup/wasabee.user.js" : "rollup/wasabee-dev.user.js",
