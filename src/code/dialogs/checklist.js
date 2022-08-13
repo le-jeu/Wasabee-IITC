@@ -20,6 +20,7 @@ import { displayInfo, displayWarning } from "../error";
 import { appendFAIcon } from "../auxiliar";
 import { getAgent } from "../model/cache";
 import { isFiltered } from "../filter";
+import { analyseCurrentData } from "../autocompleter";
 
 const OperationChecklistDialog = WDialog.extend({
   statics: {
@@ -79,6 +80,9 @@ const OperationChecklistDialog = WDialog.extend({
     };
     buttons[wX("SET_LINKS_ZONES")] = () => {
       setLinksToZones();
+    };
+    buttons["Complete Links"] = () => {
+      analyseCurrentData();
     };
 
     await this.sortable.done;
