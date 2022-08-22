@@ -10,13 +10,26 @@ import { greatCircleArcIntersectByLatLngs } from "../../geo";
 import { displayError, displayInfo } from "../../error";
 import { getAllPortalsOnScreen } from "../../ui/portal";
 
+/**
+ * Compute a sequence of splits by decreasing distance from the anchor. (greedy)
+ *
+ * @param {WasabeePortal} anchor Anchor
+ * @param {WasabeePortal} two
+ * @param {WasabeePortal} three
+ * @param {WasabeePortal[]} portalsSorted Portal candidates sorted by decreasing distance from the anchor
+ * @param {number} offset number of candidates to skip
+ * @param {Map<string, number>} revSortAngle Map portal id to distance from the anchor
+ * @returns {[WasabeePortal, WasabeePortal, WasabeePortal][]} List of splits (split portal, left, right)
+ */
 function fastFan(anchor, two, three, portalsSorted, offset, revSortAngle) {
   const res = [];
+  // list of used portal by increasing angle
   const inserted = [two, three];
   if (revSortAngle.get(two.id) > revSortAngle.get(three.id)) inserted.reverse();
   for (let i = offset; i < portalsSorted.length; i++) {
     const p = portalsSorted[i];
     if (!revSortAngle.has(p.id)) continue;
+    // find the two uded portals that direcly surround `p`
     let prev = inserted.length - 1;
     let next = 0;
     while (
@@ -29,12 +42,13 @@ function fastFan(anchor, two, three, portalsSorted, offset, revSortAngle) {
       revSortAngle.get(inserted[next].id) < revSortAngle.get(p.id)
     )
       next++;
+    // if `p` is in the field formed by the anchor and the two found portals, we have a new split
     if (
       !greatCircleArcIntersectByLatLngs(
-        anchor,
-        p,
-        inserted[prev],
-        inserted[next]
+        anchor.latLng,
+        p.latLng,
+        inserted[prev].latLng,
+        inserted[next].latLng
       )
     ) {
       res.push([p, inserted[prev], inserted[next]]);
@@ -44,8 +58,6 @@ function fastFan(anchor, two, three, portalsSorted, offset, revSortAngle) {
   return res;
 }
 
-// now that the formerly external mm functions are in the class, some of the logic can be cleaned up
-// to not require passing values around when we can get them from this.XXX
 const FlipFlopDialog = AutoDraw.extend({
   statics: {
     TYPE: "flipflopDialog",
@@ -257,10 +269,14 @@ const FlipFlopDialog = AutoDraw.extend({
     };
     const maxSteps = 8 * (nbSbul + 1) - 2;
 
+    // try too find from the farest portals a flip flop field
+    // TODO: try a clever(?) algorithm from the closest portal and building a
+    //       best solution from the smaller best solutions
     for (let i = 0; i < portals.length; i++) {
       const pTwo = portals[i];
       for (let j = i + 1; j < portals.length; j++) {
         const pThree = portals[j];
+        // filter portals between p2 and p3
         const interval = selectAngleInterval(
           this._anchorOne,
           sortedAngle,
