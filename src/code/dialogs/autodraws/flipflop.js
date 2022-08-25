@@ -58,6 +58,25 @@ function fastFan(anchor, two, three, portalsSorted, offset, revSortAngle) {
   return res;
 }
 
+/**
+ * Memoize
+ */
+function flipFlopFinder(anchor, portals) {
+  const distances = this.getDistances(anchor, portals);
+  portals.sort((a, b) => distances.get(b.id) - distances.get(a.id));
+
+  const sortedAngle = sortPortalsByAngle(anchor, portals);
+  /*
+  Idea: will loop on sorted by angle
+    - loop j from 1 to n-1
+      best[j,j+1] = (j,j+1,())
+    - loop i from 2 to n-1
+      - loop j from 1 to n-i
+        - best[j,j+i] = max(best[j,j+k] + best[j+k,j+i] for k=1,i-1)
+    - return max(best[i,j] for i,j=1,n)
+  */
+}
+
 const FlipFlopDialog = AutoDraw.extend({
   statics: {
     TYPE: "flipflopDialog",
