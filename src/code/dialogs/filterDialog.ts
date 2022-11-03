@@ -413,6 +413,7 @@ export default class FilterDialog extends WDialog {
       },
     });
 
+    /* comment filter */
     this._addFieldText(panel, "comment", {
       label: wX("COMMENT"),
       toFilter(s: string) {
@@ -496,7 +497,7 @@ export default class FilterDialog extends WDialog {
       setLinksColor
     );
 
-    this._addAction<TaskState>(
+    this._addAction(
       panel,
       wX("COMMENT"),
       L.DomUtil.create("input"),
