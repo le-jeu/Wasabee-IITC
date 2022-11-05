@@ -183,21 +183,7 @@ export function initCrossLinks() {
     true
   );
 
-  // rerun crosslinks on re-enable
-  window.map.on("layeradd", (obj) => {
-    if (obj.layer === window.plugin.wasabee.crossLinkLayers) {
-      window.plugin.wasabee._crosslinkCache = new Map();
-      checkAllLinks();
-    }
-  });
-
-  // clear crosslinks on disable
-  window.map.on("layerremove", (obj) => {
-    if (obj.layer === window.plugin.wasabee.crossLinkLayers) {
-      window.plugin.wasabee.crossLinkLayers.clearLayers();
-      delete window.plugin.wasabee._crosslinkCache;
-    }
-  });
+  window.plugin.wasabee.crossLinkLayers.on("add", checkAllLinks);
 
   window.addHook("mapDataRefreshStart", onMapDataRefreshStart);
   window.addHook("mapDataRefreshEnd", onMapDataRefreshEnd);
