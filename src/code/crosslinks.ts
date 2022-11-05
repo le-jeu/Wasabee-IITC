@@ -120,6 +120,20 @@ export function testBlocked(
   return false;
 }
 
+export function testBlocker(operation: WasabeeOp, blocker: WasabeeBlocker) {
+  for (const l of operation.links) {
+    if (
+      greatCircleArcIntersectByLatLngs(l.getLatLngs(operation), [
+        blocker.fromPortal.latLng,
+        blocker.toPortal.latLng,
+      ])
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // lets see if using a generator makes the GUI more responsive on large ops
 // -- yeild doesn't seem to release the main thread, maybe we need to yeild a
 // Promise.resolve(window.links[g]) and await it in the for loop?
@@ -148,6 +162,9 @@ export async function checkAllLinks() {
   }
   for (const b of blockers) {
     if (b.guid) window.plugin.wasabee._crosslinkCache.set(b.guid, true);
+    if (!testBlocker(operation, b)) {
+      WasabeeBlocker.removeBlocker(operation, b.from, b.to);
+    }
   }
 
   const linkGenerator = realLinks();

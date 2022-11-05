@@ -50,10 +50,10 @@ export default class WasabeeBlocker {
     if (p) {
       if (p.lat !== portal.lat || p.lng !== portal.lng) {
         // portal move, drop blockers
-        await WasabeeBlocker.removeBlocker(op, portal.id);
+        await WasabeeBlocker.removePortal(op, portal.id);
       } else if (team && p.team && p.team !== team) {
         // portal team flip, drop blockers
-        await WasabeeBlocker.removeBlocker(op, portal.id);
+        await WasabeeBlocker.removePortal(op, portal.id);
       }
       if (ent.id === ent.name && p.name !== p.id) ent.name = p.name;
     }
@@ -74,7 +74,7 @@ export default class WasabeeBlocker {
     if (!p) return false;
     if (p.lat !== portal.lat || p.lng !== portal.lng) {
       // portal move, drop blockers
-      await WasabeeBlocker.removeBlocker(op, portal.id);
+      await WasabeeBlocker.removePortal(op, portal.id);
       return true;
     }
     // sanitize data
@@ -85,7 +85,7 @@ export default class WasabeeBlocker {
       (p.team === "E" && team === "R")
     ) {
       // portal team flip, drop blockers
-      await WasabeeBlocker.removeBlocker(op, portal.id);
+      await WasabeeBlocker.removePortal(op, portal.id);
       return true;
     }
     if (p.name === portal.name) return false;
@@ -100,7 +100,7 @@ export default class WasabeeBlocker {
     return true;
   }
 
-  static async removeBlocker(op: WasabeeOp, portalId: PortalID) {
+  static async removePortal(op: WasabeeOp, portalId: PortalID) {
     const store = (await db).transaction("blockers", "readwrite").store;
     let cfrom = await store
       .index("from")
@@ -117,6 +117,10 @@ export default class WasabeeBlocker {
       cto = await cto.continue();
     }
     await (await db).delete("blockers_portals", [op.ID, portalId]);
+  }
+
+  static async removeBlocker(op: WasabeeOp, from: PortalID, to: PortalID) {
+    (await db).delete("blockers", [op.ID, from, to]);
   }
 
   static async removeBlockers(opID: OpID) {
