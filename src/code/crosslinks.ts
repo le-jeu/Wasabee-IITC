@@ -3,8 +3,8 @@ import { getSelectedOperation } from "./selectedOp";
 
 import * as PortalUI from "./ui/portal";
 import type WasabeeOp from "./model/operation";
-import type { IITC } from "../types/iitc";
 import type WasabeeLink from "./model/link";
+import type { IITC } from "../types/iitc";
 
 import { greatCircleArcIntersectByLatLngs } from "./geo";
 import { WLBlockerLayer } from "./map/blocker";
@@ -72,31 +72,14 @@ async function addBlockerFromIITC(link: IITC.Link, operation: WasabeeOp) {
   window.plugin.wasabee.crossLinkLayers.addBlocker(fromPortal, toPortal);
 }
 
-let testLinkWorker: Worker = null;
-function testLinksInWorker(links: IITC.Link[], operation: WasabeeOp) {
-  return new Promise<void>((resolve) => {
-    if (!testLinkWorker) {
-      testLinkWorker = new Worker(window.plugin.wasabee.workerUrl);
-      testLinkWorker.onmessage = async (ev) => {
-        const linkIDs = ev.data.linkIDs as LinkID[];
-        for (const linkID of linkIDs) {
-          const link = window.links[linkID];
-          if (link) {
-            await addBlockerFromIITC(link, operation);
-          }
-        }
-        resolve();
-      };
-    }
-    testLinkWorker.postMessage({
-      type: "block",
-      opID: operation.ID,
-      linkIDs: links.map((link) => link.options.guid),
-      llE6s: links.map((link) => [
-        [link.options.data.oLatE6, link.options.data.oLngE6],
-        [link.options.data.dLatE6, link.options.data.dLngE6],
-      ]),
-    });
+function testInNewWorker<T>(message) {
+  return new Promise<T>((resolve) => {
+    const worker = new Worker(window.plugin.wasabee.workerUrl);
+    worker.onmessage = (ev) => {
+      worker.terminate();
+      resolve(ev.data.result as T);
+    };
+    worker.postMessage(message);
   });
 }
 
@@ -105,10 +88,10 @@ async function testLink(link: IITC.Link, operation: WasabeeOp) {
   if (window.plugin.wasabee._crosslinkCache.has(link.options.guid)) {
     return;
   }
-  if (window.plugin.wasabee.workerUrl) {
-    await testLinksInWorker([link], operation);
-    return;
-  }
+  // if (window.plugin.wasabee.workerUrl) {
+  //   await testLinksInWorker([link], operation);
+  //   return;
+  // }
 
   let cross = false;
   for (const drawnLink of operation.links) {
@@ -191,41 +174,77 @@ export async function checkAllLinks() {
 
   if (!operation.links || operation.links.length == 0) return;
 
-  const blockers = await WasabeeBlocker.getAll(operation);
-  for (const l of operation.links) {
-    l.blocked = testBlocked(l, operation, blockers);
-    if (!window.plugin.wasabee.workerUrl)
-      l.selfBlocked = testSelfBlock(l, operation);
-  }
-  for (const b of blockers) {
-    if (b.guid) window.plugin.wasabee._crosslinkCache.set(b.guid, true);
-    if (!testBlocker(operation, b)) {
-      WasabeeBlocker.removeBlocker(operation, b.from, b.to);
+  const markers: PortalID[] = [];
+  for (const marker of operation.markers) {
+    if (marker.isDestructMarker()) {
+      markers.push(marker.portalId);
     }
   }
 
-  const linkGenerator = realLinks();
   if (window.plugin.wasabee.workerUrl) {
-    await testLinksInWorker(Array.from(linkGenerator), operation);
-    const worker = new Worker(window.plugin.wasabee.workerUrl);
-    worker.onmessage = (ev) => {
-      const linksID = ev.data.blocked as TaskID[];
-      for (const l of operation.links) {
-        l.selfBlocked = linksID.includes(l.ID);
+    const linkData: [string, IITC.LinkData][] = [];
+    for (const guid in window.links) {
+      const l = window.links[guid];
+      if (
+        l &&
+        !markers.includes(l.options.data.oGuid) &&
+        !markers.includes(l.options.data.dGuid)
+      )
+        linkData.push([l.options.guid, l.options.data]);
+    }
+    const linkIDs = await testInNewWorker<string[]>({
+      type: "block",
+      opID: operation.ID,
+      linkIDs: linkData.map((link) => link[0]),
+      llE6s: linkData.map((link) => [
+        [link[1].oLatE6, link[1].oLngE6],
+        [link[1].dLatE6, link[1].dLngE6],
+      ]),
+    });
+    for (const linkID of linkIDs) {
+      const link = window.links[linkID];
+      if (link) {
+        await addBlockerFromIITC(link, operation);
       }
-      worker.terminate();
-      window.map.fire("wasabee:crosslinks:done");
-    };
-    worker.postMessage({
+    }
+    const nonBlockers = await testInNewWorker<[PortalID, PortalID][]>({
+      type: "blocker",
+      opID: operation.ID,
+    });
+    for (const [from, to] of nonBlockers) {
+      WasabeeBlocker.removeBlocker(operation, from, to);
+    }
+    const selfBlockedIDs = await testInNewWorker<TaskID[]>({
       type: "selfblock",
       opID: operation.ID,
     });
+    const blockedIDs = await testInNewWorker<TaskID[]>({
+      type: "blocked",
+      opID: operation.ID,
+    });
+    for (const l of operation.links) {
+      l.selfBlocked = selfBlockedIDs.includes(l.ID);
+      l.blocked = blockedIDs.includes(l.ID);
+    }
   } else {
+    const blockers = await WasabeeBlocker.getAll(operation);
+    for (const l of operation.links) {
+      l.blocked = testBlocked(l, operation, blockers);
+      if (!window.plugin.wasabee.workerUrl)
+        l.selfBlocked = testSelfBlock(l, operation);
+    }
+    for (const b of blockers) {
+      if (b.guid) window.plugin.wasabee._crosslinkCache.set(b.guid, true);
+      if (!testBlocker(operation, b)) {
+        WasabeeBlocker.removeBlocker(operation, b.from, b.to);
+      }
+    }
+    const linkGenerator = realLinks();
     for (const link of linkGenerator) {
       await testLink(link, operation);
     }
-    window.map.fire("wasabee:crosslinks:done");
   }
+  window.map.fire("wasabee:crosslinks:done");
 }
 
 function onLinkAdded(data: EventLinkAdded) {
