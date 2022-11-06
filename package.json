@@ -60,7 +60,8 @@
     "format:check": "prettier --check src/code",
     "format:run": "prettier --write src/code",
     "lint:check": "eslint src",
-    "lint:fix": "eslint --fix src"
+    "lint:fix": "eslint --fix src",
+    "rollup": "rollup -c --environment BUILD:testing"
   },
   "repository": {
     "type": "git",

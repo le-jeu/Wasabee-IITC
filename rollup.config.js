@@ -61,9 +61,11 @@ const userscriptHeader = `// ==UserScript==
 // @grant         none
 // ==/UserScript==`;
 
-const outputFile = !production
-  ? "releases/dev/wasabee.user.js"
-  : "releases/prod/wasabee.user.js";
+const outputFile = `releases/${build}/wasabee.user.js`;
+const metaFile = `releases/${build}/wasabee.meta.js`;
+
+// TODO: integrate to iitc plugin script
+fs.writeFileSync(metaFile, userscriptHeader, { encoding: "utf-8" });
 
 const config = [
   {
